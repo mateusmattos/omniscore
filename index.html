@@ -394,6 +394,612 @@ function selecionar(qi,oi){
   document.getElementById('op'+qi+'-'+oi).classList.add('sel');
   document.getElementById('btnA').disabled=false;
   const isLast=qi===QS.length-1;
+  if(isLast){setTimeout(()=>mostrarResultado(),350);return;}
+  const next=qi+1;
+  if(DIM_STARTS.includes(next)&&next!==0){
+    setTimeout(()=>mostrarCapa(dimIndexDe(next)),350);
+  } else {
+    setTimeout(()=>irPara(next),350);
+  }
+}
+
+function irPara(i){
+  ocultarTudo();
+  capaAtiva=false;
+  document.getElementById('q'+i).classList.add('ativa');
+  document.getElementById('btnV').style.visibility='visible';
+  document.getElementById('btnA').style.visibility='visible';
+  cur=i;
+  document.getElementById('btnV').disabled=false;
+  document.getElementById('btnA').disabled=ans[i]===undefined;
+  const isLast=i===QS.length-1;
+  document.getElementById('btnA').textContent=isLast?'Ver resultado →':'Próxima →';
+  document.getElementById('btnA').onclick=isLast?mostrarResultado:()=>nav(1);
+  document.getElementById('qHint').textContent=(i+1)+' de '+QS.length;
+  atualizarProg(i);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function nav(dir){
+  if(dir===-1){
+    const di=dimIndexDe(cur);
+    if(cur===DIMS[di].qs[0]){mostrarCapa(di);return;}
+    irPara(cur-1);
+  } else {
+    const next=cur+1;
+    if(next>=QS.length){mostrarResultado();return;}
+    // se next é a primeira pergunta de um novo bloco, mostra a capa desse bloco
+    if(DIM_STARTS.includes(next)&&next!==0){
+      mostrarCapa(dimIndexDe(next));
+    } else {
+      irPara(next);
+    }
+  }
+}
+
+function calcScores(){
+  const dimPcts={};
+  let totalPtsW=0,totalMaxW=0;
+  DIMS.forEach(d=>{
+    const resp=d.qs.filter(qi=>ans[qi]!==undefined);
+    if(resp.length===0){dimPcts[d.id]=null;return;}
+    const pts=resp.reduce((a,qi)=>a+ans[qi],0);
+    const max=resp.length*3;
+    dimPcts[d.id]=Math.round(pts/max*100);
+    totalPtsW+=pts*(d.peso/100);
+    totalMaxW+=max*(d.peso/100);
+  });
+  const total=totalMaxW>0?Math.round(totalPtsW/totalMaxW*100):0;
+  return{dims:dimPcts,total};
+}
+
+function dimCor(v){
+  if(v===null)return'#ccc';
+  if(v>=65)return'#3b6d11';
+  if(v>=40)return'#ba7517';
+  return'#e24b4a';
+}
+
+function gerarInsights(scores){
+  const comDados=DIMS.filter(d=>scores.dims[d.id]!==null);
+  const ord=[...comDados].sort((a,b)=>scores.dims[a.id]-scores.dims[b.id]);
+  const pior=ord[0];
+  const melhor=ord[ord.length-1];
+  const items=[];
+  if(pior)items.push({ic:'↓',cor:'#e24b4a',txt:`<strong>${pior.label}</strong> é o maior gap da sua operação (${scores.dims[pior.id]}%). É onde a falta de maturidade mais impacta a experiência do cliente e a eficiência do negócio.`});
+  if(ord[1]&&scores.dims[ord[1].id]<55)items.push({ic:'→',cor:'#ba7517',txt:`<strong>${ord[1].label}</strong> também merece atenção (${scores.dims[ord[1].id]}%). Costuma ser a segunda prioridade depois de tratar o gap principal.`});
+  if(scores.dims['cultura']!==null&&scores.dims['cultura']<50)items.push({ic:'↓',cor:'#e24b4a',txt:'<strong>Cultura e times</strong> abaixo de 50% é um alerta importante. Tecnologia sem alinhamento de incentivos e governança raramente sustenta evolução omnichannel.'});
+  if(scores.total<50)items.push({ic:'→',cor:'#ba7517',txt:'Em operações no estágio inicial, o maior risco é tentar evoluir vários pontos ao mesmo tempo. Concentrar esforço em uma ou duas dimensões gera resultado mais rápido e sustentável.'});
+  if(melhor&&scores.dims[melhor.id]>=65)items.push({ic:'↑',cor:'#3b6d11',txt:`<strong>${melhor.label}</strong> é o ponto mais maduro da operação (${scores.dims[melhor.id]}%). Importante preservar esse nível enquanto as demais dimensões evoluem.`});
+  if(scores.total>=70)items.push({ic:'↑',cor:'#3b6d11',txt:'Com score acima de 70%, a empresa já tem uma base omnichannel relevante. O foco agora é otimização, escala e eliminação dos últimos pontos de fricção.'});
+  return items;
+}
+
+function buildVelocimetro(score, cor){
+  const R=110, cx=160, cy=145;
+  const startAngle=Math.PI;
+  const endAngle=2*Math.PI;
+  const frac=score/100;
+  const needleAngle=startAngle+frac*Math.PI;
+
+  function arc(pct, color, strokeW){
+    const sa=startAngle, ea=startAngle+pct*Math.PI;
+    const x1=cx+R*Math.cos(sa), y1=cy+R*Math.sin(sa);
+    const x2=cx+R*Math.cos(ea), y2=cy+R*Math.sin(ea);
+    const large=pct>0.5?1:0;
+    return`<path d="M${x1},${y1} A${R},${R} 0 ${large},1 ${x2},${y2}" fill="none" stroke="${color}" stroke-width="${strokeW}" stroke-linecap="round"/>`;
+  }
+
+  const zones=[
+    {from:0,  to:.25, color:'#f09595'},
+    {from:.25,to:.50, color:'#FAC775'},
+    {from:.50,to:.70, color:'#EF9F27'},
+    {from:.70,to:.88, color:'#97C459'},
+    {from:.88,to:1,   color:'#5DCAA5'}
+  ];
+
+  const nx=cx+85*Math.cos(needleAngle);
+  const ny=cy+85*Math.sin(needleAngle);
+
+  const ticks=[
+    {pct:0,   label:'0'},
+    {pct:.25, label:'25'},
+    {pct:.50, label:'50'},
+    {pct:.70, label:'70'},
+    {pct:.88, label:'88'},
+    {pct:1,   label:'100'}
+  ];
+
+  const ticksSvg=ticks.map(t=>{
+    const a=startAngle+t.pct*Math.PI;
+    const tx=cx+(R+18)*Math.cos(a);
+    const ty=cy+(R+18)*Math.sin(a);
+    return`<text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="#bbb" font-family="-apple-system,sans-serif">${t.label}</text>`;
+  }).join('');
+
+  const levelLabels=[
+    {pct:.125,label:'Fragmentado'},
+    {pct:.375,label:'Iniciante'},
+    {pct:.60, label:'Em desenv.'},
+    {pct:.79, label:'Avançado'},
+    {pct:.94, label:'Referência'}
+  ].map(t=>{
+    const a=startAngle+t.pct*Math.PI;
+    const tx=cx+(R-28)*Math.cos(a);
+    const ty=cy+(R-28)*Math.sin(a);
+    return`<text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-size="7.5" fill="#aaa" font-family="-apple-system,sans-serif">${t.label}</text>`;
+  }).join('');
+
+  return`
+  <svg viewBox="0 0 320 165" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block">
+    <!-- trilha de fundo -->
+    <path d="M${cx-R},${cy} A${R},${R} 0 0,1 ${cx+R},${cy}" fill="none" stroke="#f0f0ee" stroke-width="18" stroke-linecap="round"/>
+    <!-- zonas coloridas -->
+    ${zones.map(z=>{
+      const sa=startAngle+z.from*Math.PI;
+      const ea=startAngle+z.to*Math.PI;
+      const x1=(cx+R*Math.cos(sa)).toFixed(2);
+      const y1=(cy+R*Math.sin(sa)).toFixed(2);
+      const x2=(cx+R*Math.cos(ea)).toFixed(2);
+      const y2=(cy+R*Math.sin(ea)).toFixed(2);
+      const large=(z.to-z.from)>0.5?1:0;
+      return`<path d="M${x1},${y1} A${R},${R} 0 ${large},1 ${x2},${y2}" fill="none" stroke="${z.color}" stroke-width="18" stroke-linecap="butt" opacity="0.85"/>`;
+    }).join('')}
+    <!-- labels de nível -->
+    ${levelLabels}
+    <!-- ticks numéricos -->
+    ${ticksSvg}
+    <!-- agulha -->
+    <line x1="${cx}" y1="${cy}" x2="${nx.toFixed(2)}" y2="${ny.toFixed(2)}" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy}" r="7" fill="#1a1a1a"/>
+    <circle cx="${cx}" cy="${cy}" r="3.5" fill="#fff"/>
+    <!-- score central -->
+    <text x="${cx}" y="${cy+28}" text-anchor="middle" font-size="28" font-weight="700" fill="${cor}" font-family="-apple-system,sans-serif">${score}%</text>
+  </svg>`;
+}
+
+function mostrarResultado(){
+  document.getElementById('stepQ').style.display='none';
+  document.getElementById('stepRes').style.display='block';
+  document.getElementById('enviando').style.display='block';
+  document.getElementById('progFill').style.width='100%';
+  document.getElementById('progPct').textContent='100%';
+  document.getElementById('progLabel').textContent='Diagnóstico inicial';
+  window.scrollTo({top:0,behavior:'smooth'});
+
+  const scores=calcScores();
+  const nivel=NIVEIS.find(n=>scores.total>=n.min&&scores.total<n.max)||NIVEIS[4];
+  const insights=gerarInsights(scores);
+
+  const payload={
+    nome:cad.nome,email:cad.email,whatsapp:cad.whatsapp,
+    empresa:cad.empresa,cargo:cad.cargo,
+    scoreDados:scores.dims.dados??'',
+    scoreJornada:scores.dims.jornada??'',
+    scoreLogistica:scores.dims.logistica??'',
+    scoreCultura:scores.dims.cultura??'',
+    scoreCx:scores.dims.cx??'',
+    scorePerformance:scores.dims.performance??'',
+    scoreTotal:scores.total,
+    nivel:nivel.label
+  };
+
+  const iframe=document.createElement('iframe');
+  iframe.name='hid';iframe.style.display='none';
+  document.body.appendChild(iframe);
+  const form=document.createElement('form');
+  form.method='POST';form.action=WEBHOOK;form.target='hid';form.style.display='none';
+  Object.entries(payload).forEach(([k,v])=>{
+    const inp=document.createElement('input');
+    inp.type='hidden';inp.name=k;inp.value=v;form.appendChild(inp);
+  });
+  document.body.appendChild(form);
+  form.submit();
+
+  setTimeout(()=>{
+    document.getElementById('enviando').style.display='none';
+    const velocSvg=buildVelocimetro(scores.total,nivel.cor);
+    document.getElementById('resConteudo').innerHTML=`
+
+      <div class="veloc-card">
+        <div class="veloc-rotulo">Diagnóstico inicial de maturidade omnichannel</div>
+        <div class="veloc-svg-wrap">${velocSvg}</div>
+        <div class="veloc-nivel" style="color:${nivel.cor}">${nivel.label}</div>
+        <div class="veloc-desc">${nivel.desc}</div>
+      </div>
+
+      <div class="dims-grid">
+        ${DIMS.map(d=>{
+          const v=scores.dims[d.id];
+          const c=dimCor(v);
+          return`<div class="dim-card">
+            <div class="dim-card-nome">${d.label}</div>
+            <div class="dim-card-val" style="color:${c}">${v!==null?v+'%':'—'}</div>
+            <div class="dim-bar" style="background:${c};width:${v!==null?v:0}%"></div>
+          </div>`;
+        }).join('')}
+      </div>
+
+      <div class="insights">
+        <h3>O que esse diagnóstico inicial revela</h3>
+        ${insights.map(it=>`
+          <div class="ins-item">
+            <div class="ins-ic" style="color:${it.cor}">${it.ic}</div>
+            <div>${it.txt}</div>
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="obrigado">
+        <h3>Diagnóstico inicial concluído</h3>
+        <p>Este é um diagnóstico de primeiro nível — desenvolvido para dar uma visão clara e rápida sobre a maturidade omnichannel da sua operação.<br><br>
+        Use os resultados como ponto de partida para conversas internas, definição de prioridades e identificação das dimensões que mais precisam de atenção.</p>
+      </div>
+    `;
+  },2000);
+}
+</script>
+</body>
+</html>.capa-btn:hover{background:#0c447c}
+.capa-voltar{margin-top:1rem;text-align:center}
+.capa-voltar button{background:none;border:none;font-size:13px;color:#bbb;cursor:pointer;padding:4px 8px}
+.capa-voltar button:hover{color:#888}
+.capa-pills{display:flex;gap:16px;justify-content:center;margin-top:1.5rem;flex-wrap:wrap}
+.capa-pill{font-size:12px;color:#bbb;display:flex;align-items:center;gap:5px}
+.capa-pill-dot{width:6px;height:6px;border-radius:50%;background:#ddd}
+.q-dim{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#185fa5;margin-bottom:.9rem}
+.q-texto{font-size:18px;font-weight:500;color:#1a1a1a;line-height:1.4;margin-bottom:1.75rem}
+.opcoes{display:flex;flex-direction:column;gap:9px}
+.opcao{display:flex;align-items:flex-start;gap:13px;padding:13px 15px;border:1px solid #e8e8e5;border-radius:10px;cursor:pointer;transition:all .15s;font-size:14px;color:#444;line-height:1.45;user-select:none}
+.opcao:hover{border-color:#b5d4f4;background:#f7fbff}
+.opcao.sel{border-color:#378add;background:#e6f1fb;color:#0c447c}
+.opcao-letra{min-width:22px;height:22px;border-radius:50%;border:1.5px solid #ddd;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#bbb;flex-shrink:0;margin-top:1px;transition:all .15s}
+.opcao.sel .opcao-letra{background:#185fa5;border-color:#185fa5;color:#fff}
+.q-nav{display:flex;align-items:center;justify-content:space-between;margin-top:1.5rem}
+.q-hint{font-size:12px;color:#ccc}
+.btn{padding:10px 22px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#555;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s}
+.btn:hover:not(:disabled){background:#f5f5f3}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn-p{background:#185fa5;color:#fff;border-color:#185fa5}
+.btn-p:hover:not(:disabled){background:#0c447c}
+
+/* RESULTADO */
+.resultado{display:none}
+.enviando{text-align:center;font-size:13px;color:#bbb;padding:2rem 0;display:none}
+
+/* VELOCÍMETRO */
+.veloc-card{background:#fff;border:1px solid #e8e8e5;border-radius:16px;padding:2rem 2rem 1.5rem;text-align:center;margin-bottom:10px}
+.veloc-rotulo{font-size:12px;color:#bbb;letter-spacing:.06em;text-transform:uppercase;margin-bottom:1.25rem}
+.veloc-svg-wrap{width:100%;max-width:320px;margin:0 auto 1rem}
+.veloc-nivel{font-size:17px;font-weight:600;margin-bottom:.5rem}
+.veloc-desc{font-size:13px;color:#777;line-height:1.65;max-width:400px;margin:0 auto}
+
+/* GRID DIMS */
+.dims-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.dim-card{background:#fff;border:1px solid #e8e8e5;border-radius:12px;padding:.9rem .75rem;text-align:center}
+.dim-card-nome{font-size:10px;color:#aaa;margin-bottom:5px;line-height:1.3;min-height:28px;display:flex;align-items:center;justify-content:center}
+.dim-card-val{font-size:22px;font-weight:600}
+.dim-bar{height:3px;border-radius:2px;margin-top:6px;transition:width .6s ease}
+
+/* INSIGHTS */
+.insights{background:#fff;border:1px solid #e8e8e5;border-radius:16px;padding:1.5rem 2rem;margin-bottom:10px}
+.insights h3{font-size:15px;font-weight:600;margin-bottom:1rem}
+.ins-item{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid #f0f0ee;font-size:13px;line-height:1.6;color:#555}
+.ins-item:last-child{border-bottom:none;padding-bottom:0}
+.ins-ic{font-size:14px;font-weight:700;flex-shrink:0;width:18px;margin-top:1px}
+
+/* OBRIGADO */
+.obrigado{background:#f7fbff;border:1px solid #b5d4f4;border-radius:16px;padding:1.5rem 2rem;text-align:center}
+.obrigado h3{font-size:15px;font-weight:600;color:#0c447c;margin-bottom:.5rem}
+.obrigado p{font-size:13px;color:#185fa5;line-height:1.65}
+
+@media(max-width:520px){
+  .fg{grid-template-columns:1fr}
+  .dims-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .q-texto{font-size:16px}
+  .card{padding:1.5rem}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="logo">OmniScore</div>
+  <div class="prog-wrap">
+    <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    <div class="prog-meta"><span id="progLabel">Contexto do diagnóstico</span><span id="progPct"></span></div>
+  </div>
+
+  <!-- CADASTRO -->
+  <div id="stepCad">
+    <div class="card">
+      <div class="cad-titulo">Contextualize o seu diagnóstico</div>
+      <div class="cad-sub">O resultado é personalizado com base no seu perfil e empresa. Esses dados não são compartilhados — servem apenas para contextualizar as respostas e gerar um diagnóstico mais preciso.</div>
+      <div class="fg">
+        <div class="fl"><label>Nome completo</label><input id="f-nome" type="text" placeholder="Seu nome"></div>
+        <div class="fl"><label>E-mail</label><input id="f-email" type="email" placeholder="voce@empresa.com"></div>
+      </div>
+      <div class="fg">
+        <div class="fl"><label>WhatsApp</label><input id="f-whatsapp" type="tel" placeholder="(51) 99999-9999"></div>
+        <div class="fl"><label>Empresa</label><input id="f-empresa" type="text" placeholder="Nome da empresa"></div>
+      </div>
+      <div class="fg un">
+        <div class="fl"><label>Cargo / área</label><input id="f-cargo" type="text" placeholder="Ex: Gerente de E-commerce"></div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-p" onclick="iniciar()">Iniciar diagnóstico →</button>
+    </div>
+  </div>
+
+  <!-- PERGUNTAS -->
+  <div id="stepQ" style="display:none">
+    <div id="qWrap"></div>
+    <div class="q-nav">
+      <button class="btn" id="btnV" onclick="nav(-1)" disabled>← Voltar</button>
+      <span class="q-hint" id="qHint"></span>
+      <button class="btn btn-p" id="btnA" onclick="nav(1)" disabled>Próxima →</button>
+    </div>
+  </div>
+
+  <!-- RESULTADO -->
+  <div class="resultado" id="stepRes">
+    <div class="enviando" id="enviando">Gerando seu diagnóstico inicial...</div>
+    <div id="resConteudo"></div>
+  </div>
+</div>
+
+<script>
+const WEBHOOK='https://script.google.com/macros/s/AKfycbyb0mEFo3KPO2YlIdivVVDAyPfZXTkosLb8PCdw6sGFy0VgnAtbNjfyArMNonveB6Wy1Q/exec';
+
+const QS=[
+  /* ── DADOS E TECNOLOGIA (0-4) ── */
+  {dim:'Dados e tecnologia',
+   texto:'Como os dados do cliente são unificados entre os canais da sua empresa?',
+   opcoes:['Cada canal tem sua própria base — não se comunicam','Há integração, mas é manual ou parcial e gera inconsistências','Sistema centralizado funcionando, mas ainda com gaps relevantes','Visão única do cliente em tempo real em todos os canais']},
+  {dim:'Dados e tecnologia',
+   texto:'Como é a integração entre os sistemas principais — ERP, e-commerce e PDV das lojas?',
+   opcoes:['Sistemas isolados, cada um opera de forma independente','Integração existe, mas depende de processos manuais frequentes','Integração via API, mas com falhas e ajustes recorrentes','Integração estável e confiável entre todos os sistemas críticos']},
+  {dim:'Dados e tecnologia',
+   texto:'A empresa usa dados de comportamento do cliente para personalizar comunicação e ofertas?',
+   opcoes:['Não usamos dados para personalização','Segmentação básica por e-mail, sem dados de loja física','Personalização no digital, sem considerar o comportamento offline','Personalização ativa em todos os canais com base em histórico unificado']},
+  {dim:'Dados e tecnologia',
+   texto:'Existem dashboards que mostram o desempenho omnichannel de forma integrada para a gestão?',
+   opcoes:['Não há acompanhamento estruturado — usamos relatórios avulsos','Relatórios manuais em planilhas, sem periodicidade fixa','Dashboard parcial, cobre alguns canais mas não todos','BI consolidado com todos os canais, atualização automática e uso gerencial']},
+  {dim:'Dados e tecnologia',
+   texto:'Como é feita a gestão da identidade do cliente entre canais — reconhecimento por CPF, login ou programa de fidelidade?',
+   opcoes:['Não há reconhecimento do cliente entre canais','Identificação manual pelo vendedor na loja física','Login unificado no digital, mas sem vínculo com a loja física','Identificação automática e unificada em todos os pontos de contato']},
+
+  /* ── JORNADA DO CLIENTE (5-9) ── */
+  {dim:'Jornada do cliente',
+   texto:'O cliente consegue transitar entre canais sem perder contexto — iniciar no app e resolver na loja, por exemplo?',
+   opcoes:['Não — cada canal é uma experiência completamente separada','Em alguns fluxos específicos, mas não é a regra geral','Na maioria das jornadas, mas ainda com pontos de fricção','Sim — experiência fluida em qualquer canal que o cliente escolha']},
+  {dim:'Jornada do cliente',
+   texto:'Como funciona troca ou devolução para quem comprou em um canal e quer resolver em outro?',
+   opcoes:['Não é possível — troca só acontece no mesmo canal da compra','É possível, mas o processo é burocrático e gera atrito','Funciona, mas depende de consulta manual ao histórico','Processo fluido — cliente resolve em qualquer canal sem esforço']},
+  {dim:'Jornada do cliente',
+   texto:'O programa de fidelidade ou benefícios funciona de forma unificada entre canais?',
+   opcoes:['Não há programa de fidelidade','Existe, mas pontos e benefícios são separados por canal','Acúmulo unificado, mas resgate restrito a um canal','Acúmulo e resgate integrados em qualquer canal']},
+  {dim:'Jornada do cliente',
+   texto:'Quando um cliente aciona o atendimento, o agente tem acesso ao histórico completo de todos os canais?',
+   opcoes:['Cada canal vê apenas o histórico do próprio canal','Histórico parcial disponível, mas com lacunas relevantes','Histórico digital disponível, mas compras na loja física não aparecem','Histórico completo e acessível em qualquer ponto de atendimento']},
+  {dim:'Jornada do cliente',
+   texto:'A comunicação de marketing — e-mail, push, SMS — considera o comportamento do cliente em todos os canais, incluindo loja física?',
+   opcoes:['Comunicação genérica, igual para todos','Segmentação básica por comportamento digital apenas','Personalização digital avançada, mas sem dados da loja física','Comunicação integrada com comportamento unificado de todos os canais']},
+
+  /* ── LOGÍSTICA E ESTOQUE (10-14) ── */
+  {dim:'Logística e estoque',
+   texto:'O que o sistema mostra de estoque bate com o que está disponível na prática entre os canais?',
+   opcoes:['Cada canal tem estoque separado — não há visibilidade cruzada','Há visibilidade, mas com defasagem — os dados frequentemente não batem','Visibilidade razoável, com exceções e ajustes pontuais','Estoque unificado e confiável em tempo real em todos os canais']},
+  {dim:'Logística e estoque',
+   texto:'As lojas físicas participam ativamente da operação online — Ship from Store, Click & Collect ou similares?',
+   opcoes:['Não — loja física e e-commerce operam de forma completamente separada','Estamos avaliando ou em fase piloto inicial','Operando em algumas lojas, sem escala para toda a rede','Lojas integradas à operação digital com processos definidos e estáveis']},
+  {dim:'Logística e estoque',
+   texto:'Como é tratada a logística reversa — devoluções e trocas que envolvem mais de um canal?',
+   opcoes:['Processo manual, sem rastreamento adequado','Processo definido, mas com muito retrabalho operacional','Estruturado, mas sem integração automática com o estoque','Integrada — devolução reabastece o estoque disponível automaticamente']},
+  {dim:'Logística e estoque',
+   texto:'Existem SLAs definidos e acompanhados para as modalidades de entrega omnichannel?',
+   opcoes:['Não há SLAs definidos para modalidades omnichannel','SLAs informais, sem monitoramento sistemático','SLAs definidos, mas monitorados manualmente com gaps','SLAs monitorados com alertas automáticos de desvio']},
+  {dim:'Logística e estoque',
+   texto:'Como a empresa lida com rupturas de estoque em pedidos omnichannel — produto vendido mas indisponível para separação?',
+   opcoes:['A ruptura é descoberta depois da venda, gerando cancelamento','Identificamos a ruptura, mas o processo de resolução é manual e lento','Temos alertas configurados, mas a ação corretiva ainda é manual','Gestão preditiva — sistema redireciona ou bloqueia a venda antes da ruptura']},
+
+  /* ── CULTURA E TIMES (15-19) ── */
+  {dim:'Cultura e times',
+   texto:'Existe alguém com responsabilidade clara e dedicada pela estratégia omnichannel na empresa?',
+   opcoes:['Não — responsabilidade diluída entre áreas sem coordenação','Existe um responsável, mas sem equipe, orçamento ou autonomia real','Há uma área dedicada, ainda em estruturação','Time com liderança clara, orçamento e OKRs próprios']},
+  {dim:'Cultura e times',
+   texto:'Os times de loja física têm incentivo para apoiar as vendas digitais, ou existe conflito interno?',
+   opcoes:['Conflito claro — a loja sente que o digital compete com ela','Não há conflito direto, mas também não há colaboração real','Estamos testando modelos de comissionamento compartilhado','Modelo unificado funcionando — loja e digital trabalham para o mesmo resultado']},
+  {dim:'Cultura e times',
+   texto:'Existe um processo formal de gestão de projetos omnichannel — backlog, responsáveis e critério de conclusão definidos?',
+   opcoes:['Projetos surgem de forma ad hoc, sem metodologia','Processo informal, sem backlog ou priorização estruturada','Metodologia ágil em uso, mas desconectada das metas de negócio','Backlog priorizado, owners definidos, sprint reviews e OKRs conectados']},
+  {dim:'Cultura e times',
+   texto:'O omnichannel está na agenda estratégica da liderança sênior, com revisão periódica e recursos alocados?',
+   opcoes:['Não está na agenda da liderança','Reconhecido como importante, mas sem recursos alocados','Na agenda com recursos, mas sem revisão periódica de resultados','Pauta de revisão estratégica com OKRs monitorados pelo C-level']},
+  {dim:'Cultura e times',
+   texto:'Os times de loja física recebem treinamento periódico sobre ferramentas e processos omnichannel?',
+   opcoes:['Sem treinamento específico para omnichannel','Treinamento pontual na implantação, sem reciclagem','Treinamento periódico, mas com cobertura parcial da rede','Programa de capacitação contínua para toda a rede com acompanhamento']},
+
+  /* ── EXPERIÊNCIA DO CLIENTE (20-22) ── */
+  {dim:'Experiência do cliente',
+   texto:'Como você avalia a consistência da experiência do cliente ao interagir com a marca em canais diferentes?',
+   opcoes:['Muito inconsistente — preço, informação e atendimento variam bastante','Inconsistências relevantes que geram reclamações recorrentes','Razoavelmente consistente, com pontos de melhoria já identificados','Experiência reconhecidamente consistente em todos os canais']},
+  {dim:'Experiência do cliente',
+   texto:'A empresa monitora e age sobre o que os clientes dizem sobre a experiência omnichannel — reclamações, avaliações, NPS?',
+   opcoes:['Não monitoramos de forma sistemática','Monitoramos, mas a resposta é reativa e sem análise de causa raiz','Monitoramento ativo com respostas, mas sem melhoria estruturada de processos','Ciclo completo: monitoramento, causa raiz, ação corretiva e acompanhamento']},
+  {dim:'Experiência do cliente',
+   texto:'A experiência na loja física foi redesenhada para integrar o digital — vendedores com acesso ao histórico online, catálogo digital disponível?',
+   opcoes:['A loja física opera exatamente como antes do omnichannel','Algumas ferramentas digitais disponíveis, mas sem adoção consistente','Loja com ferramentas digitais em parte da rede com boa adoção','Loja física completamente redesenhada como hub omnichannel em toda a rede']},
+
+  /* ── PERFORMANCE E RESULTADOS (23-25) ── */
+  {dim:'Performance e resultados',
+   texto:'A empresa acompanha indicadores específicos de omnichannel além do faturamento por canal?',
+   opcoes:['Não — só acompanhamos receita por canal','Alguns KPIs básicos, mas sem visão consolidada','Dashboard com métricas omnichannel, mas cobertura parcial','Visão completa: penetração omni, NPS por canal, custo de servir, LTV cross-canal']},
+  {dim:'Performance e resultados',
+   texto:'Os resultados das iniciativas omnichannel chegam à liderança com frequência e formato estruturado?',
+   opcoes:['Não chegam — não há reporte formal para a liderança','Chegam esporadicamente, sem formato ou frequência definida','Revisão mensal existe, mas sem estrutura para tomada de decisão','Revisão regular com apresentação estruturada e decisões orientadas por dados']},
+  {dim:'Performance e resultados',
+   texto:'A empresa mede o valor gerado pelos clientes que compram em mais de um canal — LTV cross-canal, retenção, ticket médio?',
+   opcoes:['Não medimos por perfil de comportamento de canal','Medimos receita total, mas sem distinção de clientes omnichannel','Temos essa visão, mas ela não orienta as decisões de investimento','Clientes omnichannel têm LTV comprovadamente maior e isso orienta nossa estratégia']}
+];
+
+const DIMS=[
+  {id:'dados',      label:'Dados e tecnologia',    qs:[0,1,2,3,4],     peso:20,
+   capaIcoBg:'#e6f1fb', capaIcoSvg:'<path d="M6 4h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" stroke="#185fa5" stroke-width="1.5" fill="none"/><path d="M8 10h6M8 13h4M8 7h2" stroke="#185fa5" stroke-width="1.5" stroke-linecap="round"/>',
+   capaDesc:'Vamos entender como os dados e sistemas da sua operação se comunicam entre si. Esta dimensão revela se a empresa tem a base tecnológica necessária para operar com coerência entre canais.',
+   capaItens:['5 perguntas','Foco em integração e dados']},
+  {id:'jornada',    label:'Jornada do cliente',    qs:[5,6,7,8,9],     peso:20,
+   capaIcoBg:'#eaf3de', capaIcoSvg:'<path d="M4 12c0-4.4 3.6-8 8-8s8 3.6 8 8-3.6 8-8 8-8-3.6-8-8z" stroke="#3b6d11" stroke-width="1.5" fill="none"/><path d="M8 12l3 3 5-5" stroke="#3b6d11" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>',
+   capaDesc:'Agora avaliamos o que o cliente realmente vive ao transitar entre os canais. Trocas, atendimento, fidelidade e consistência de experiência — o omnichannel que o consumidor enxerga.',
+   capaItens:['5 perguntas','Foco em CX e fluidez']},
+  {id:'logistica',  label:'Logística e estoque',   qs:[10,11,12,13,14],peso:20,
+   capaIcoBg:'#faeeda', capaIcoSvg:'<rect x="4" y="8" width="14" height="12" rx="2" stroke="#854f0b" stroke-width="1.5" fill="none"/><path d="M8 8V6a4 4 0 0 1 8 0v2" stroke="#854f0b" stroke-width="1.5" fill="none"/><path d="M10 13h2m0 0h2m-2 0v-2m0 2v2" stroke="#854f0b" stroke-width="1.5" stroke-linecap="round"/>',
+   capaDesc:'Esta dimensão avalia a espinha dorsal operacional do omnichannel — estoque, Ship from Store, logística reversa e SLAs. É onde a promessa feita ao cliente é cumprida ou quebrada.',
+   capaItens:['5 perguntas','Foco em operação e entrega']},
+  {id:'cultura',    label:'Cultura e times',       qs:[15,16,17,18,19],peso:20,
+   capaIcoBg:'#fbeaf0', capaIcoSvg:'<path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="#993556" stroke-width="1.5" fill="none" stroke-linecap="round"/><circle cx="10" cy="7" r="4" stroke="#993556" stroke-width="1.5" fill="none"/><path d="M21 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="#993556" stroke-width="1.5" fill="none" stroke-linecap="round"/>',
+   capaDesc:'Tecnologia sem pessoas e governança não sustenta evolução. Aqui avaliamos se a empresa tem estrutura, incentivos e liderança alinhados para executar a estratégia omnichannel.',
+   capaItens:['5 perguntas','Foco em pessoas e governança']},
+  {id:'cx',         label:'Experiência do cliente',qs:[20,21,22],      peso:10,
+   capaIcoBg:'#eeedfe', capaIcoSvg:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="#534ab7" stroke-width="1.5" fill="none" stroke-linejoin="round"/>',
+   capaDesc:'Mais do que o que a empresa opera internamente, esta dimensão olha para o que o cliente percebe. Consistência, monitoramento de satisfação e a loja física como hub de experiência.',
+   capaItens:['3 perguntas','Foco em percepção do cliente']},
+  {id:'performance',label:'Performance',           qs:[23,24,25],      peso:10,
+   capaIcoBg:'#e1f5ee', capaIcoSvg:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke="#0f6e56" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+   capaDesc:'A última dimensão avalia se a empresa mede o que importa — KPIs omnichannel, LTV cross-canal e qualidade dos reportes para a liderança tomar decisões orientadas por dados.',
+   capaItens:['3 perguntas','Foco em métricas e decisão']}
+];
+
+const NIVEIS=[
+  {min:0, max:25,label:'Nível 0 — Fragmentado',       cor:'#e24b4a',desc:'A operação ainda funciona em silos. Cada canal é uma ilha — sem integração de dados, processos ou experiência consistente para o cliente.'},
+  {min:25,max:50,label:'Nível 1 — Iniciante',          cor:'#ef9f27',desc:'Há consciência do problema e algumas iniciativas em andamento, mas faltam consistência, governança e integração entre as dimensões.'},
+  {min:50,max:70,label:'Nível 2 — Em desenvolvimento', cor:'#ba7517',desc:'A empresa está no caminho certo. Existem integrações relevantes, mas com gaps importantes de escala, dados e cultura.'},
+  {min:70,max:88,label:'Nível 3 — Avançado',           cor:'#3b6d11',desc:'Operação omnichannel madura. A maioria dos canais funciona de forma integrada. O foco agora é otimização e eliminação dos últimos pontos de fricção.'},
+  {min:88,max:101,label:'Nível 4 — Referência',        cor:'#27500a',desc:'Excelência operacional. Visão unificada do cliente, dados em tempo real e cultura de melhoria contínua consolidada. Benchmark do setor.'}
+];
+
+let cur=0;
+let capaAtiva=false;
+const ans={};
+let cad={};
+
+// índice da 1ª pergunta de cada dimensão
+const DIM_STARTS=DIMS.map(d=>d.qs[0]);
+
+function dimIndexDe(qi){
+  for(let d=DIMS.length-1;d>=0;d--){if(qi>=DIMS[d].qs[0])return d;}
+  return 0;
+}
+
+function atualizarProg(qi){
+  const p=Math.round((qi+1)/(QS.length+1)*100);
+  document.getElementById('progFill').style.width=p+'%';
+  document.getElementById('progPct').textContent=p+'%';
+  document.getElementById('progLabel').textContent=QS[qi].dim+' · '+(qi+1)+' de '+QS.length;
+}
+
+function atualizarProgCapa(di){
+  const qi=DIMS[di].qs[0];
+  const p=Math.round(qi/(QS.length+1)*100);
+  document.getElementById('progFill').style.width=p+'%';
+  document.getElementById('progPct').textContent=p+'%';
+  document.getElementById('progLabel').textContent='Bloco '+(di+1)+' de '+DIMS.length+' — '+DIMS[di].label;
+}
+
+function iniciar(){
+  const nome=document.getElementById('f-nome').value.trim();
+  const email=document.getElementById('f-email').value.trim();
+  const empresa=document.getElementById('f-empresa').value.trim();
+  const cargo=document.getElementById('f-cargo').value.trim();
+  if(!nome||!email||!empresa||!cargo){alert('Preencha todos os campos para continuar.');return;}
+  cad={nome,email,whatsapp:document.getElementById('f-whatsapp').value.trim(),empresa,cargo};
+  document.getElementById('stepCad').style.display='none';
+  document.getElementById('stepQ').style.display='block';
+  renderCapas();
+  renderPerguntas();
+  mostrarCapa(0);
+}
+
+function renderCapas(){
+  const wrap=document.getElementById('qWrap');
+  const capasHtml=DIMS.map((d,di)=>`
+    <div class="capa" id="capa${di}">
+      <div class="capa-inner">
+        <div class="capa-num">Bloco ${di+1} de ${DIMS.length}</div>
+        <div class="capa-icone" style="background:${d.capaIcoBg}">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">${d.capaIcoSvg}</svg>
+        </div>
+        <div class="capa-titulo">${d.label}</div>
+        <div class="capa-desc">${d.capaDesc}</div>
+        <button class="capa-btn" onclick="iniciarBloco(${di})">Começar este bloco →</button>
+        <div class="capa-pills">
+          ${d.capaItens.map(it=>`<span class="capa-pill"><span class="capa-pill-dot"></span>${it}</span>`).join('')}
+        </div>
+      </div>
+      ${di>0?`<div class="capa-voltar"><button onclick="voltarDaCapa(${di})">← Voltar</button></div>`:''}
+    </div>
+  `).join('');
+  wrap.insertAdjacentHTML('afterbegin', capasHtml);
+}
+
+function renderPerguntas(){
+  const wrap=document.getElementById('qWrap');
+  wrap.insertAdjacentHTML('beforeend', QS.map((q,i)=>`
+    <div class="q-wrap" id="q${i}">
+      <div class="card">
+        <div class="q-dim">${q.dim}</div>
+        <div class="q-texto">${q.texto}</div>
+        <div class="opcoes">
+          ${q.opcoes.map((o,oi)=>`
+            <div class="opcao${ans[i]===oi?' sel':''}" id="op${i}-${oi}" onclick="selecionar(${i},${oi})">
+              <div class="opcao-letra">${['A','B','C','D'][oi]}</div>
+              <span>${o}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `).join(''));
+}
+
+function ocultarTudo(){
+  document.querySelectorAll('.capa').forEach(el=>el.classList.remove('ativa'));
+  document.querySelectorAll('.q-wrap').forEach(el=>el.classList.remove('ativa'));
+  document.getElementById('btnV').style.visibility='hidden';
+  document.getElementById('btnA').style.visibility='hidden';
+  document.getElementById('qHint').textContent='';
+}
+
+function mostrarCapa(di){
+  ocultarTudo();
+  capaAtiva=true;
+  document.getElementById('capa'+di).classList.add('ativa');
+  atualizarProgCapa(di);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function iniciarBloco(di){
+  capaAtiva=false;
+  irPara(DIMS[di].qs[0]);
+}
+
+function voltarDaCapa(di){
+  if(di===0){
+    document.getElementById('stepQ').style.display='none';
+    document.getElementById('stepCad').style.display='block';
+  } else {
+    const qAnterior=DIMS[di-1].qs[DIMS[di-1].qs.length-1];
+    capaAtiva=false;
+    irPara(qAnterior);
+  }
+}
+
+function selecionar(qi,oi){
+  ans[qi]=oi;
+  document.querySelectorAll('#q'+qi+' .opcao').forEach(el=>el.classList.remove('sel'));
+  document.getElementById('op'+qi+'-'+oi).classList.add('sel');
+  document.getElementById('btnA').disabled=false;
+  const isLast=qi===QS.length-1;
   setTimeout(()=>{isLast?mostrarResultado():nav(1);},350);
 }
 
