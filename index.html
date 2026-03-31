@@ -13,7 +13,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .prog-track{height:3px;background:#e5e5e2;border-radius:2px;overflow:hidden;margin-bottom:8px}
 .prog-fill{height:100%;background:#185fa5;border-radius:2px;transition:width .4s ease}
 .prog-meta{display:flex;justify-content:space-between;font-size:12px;color:#bbb}
-.card{background:#fff;border:1px solid #e8e8e5;border-radius:16px;padding:2rem;margin-bottom:1rem}
+.card{background:#fff;border:1px solid #e8e8e5;border-radius:16px;padding:2rem;margin-bottom:10px}
 .cad-titulo{font-size:18px;font-weight:600;margin-bottom:.35rem}
 .cad-sub{font-size:13px;color:#999;margin-bottom:1.5rem;line-height:1.5}
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:11px}
@@ -27,7 +27,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .q-wrap{display:none}
 .q-wrap.ativa{display:block}
 .q-dim{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#185fa5;margin-bottom:.9rem}
-.q-texto{font-size:19px;font-weight:500;color:#1a1a1a;line-height:1.4;margin-bottom:1.75rem}
+.q-texto{font-size:18px;font-weight:500;color:#1a1a1a;line-height:1.4;margin-bottom:1.75rem}
 .opcoes{display:flex;flex-direction:column;gap:9px}
 .opcao{display:flex;align-items:flex-start;gap:13px;padding:13px 15px;border:1px solid #e8e8e5;border-radius:10px;cursor:pointer;transition:all .15s;font-size:14px;color:#444;line-height:1.45;user-select:none}
 .opcao:hover{border-color:#b5d4f4;background:#f7fbff}
@@ -41,30 +41,41 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .btn:disabled{opacity:.3;cursor:not-allowed}
 .btn-p{background:#185fa5;color:#fff;border-color:#185fa5}
 .btn-p:hover:not(:disabled){background:#0c447c}
+
+/* RESULTADO */
 .resultado{display:none}
-.score-hero{text-align:center;padding:2.5rem 2rem;background:#fff;border:1px solid #e8e8e5;border-radius:16px;margin-bottom:10px}
-.score-rotulo{font-size:12px;color:#bbb;letter-spacing:.06em;text-transform:uppercase;margin-bottom:.5rem}
-.score-num{font-size:68px;font-weight:700;line-height:1;margin-bottom:.35rem}
-.score-nivel{font-size:16px;font-weight:600;margin-bottom:.75rem}
-.score-desc{font-size:14px;color:#777;line-height:1.65;max-width:440px;margin:0 auto}
+.enviando{text-align:center;font-size:13px;color:#bbb;padding:2rem 0;display:none}
+
+/* VELOCÍMETRO */
+.veloc-card{background:#fff;border:1px solid #e8e8e5;border-radius:16px;padding:2rem 2rem 1.5rem;text-align:center;margin-bottom:10px}
+.veloc-rotulo{font-size:12px;color:#bbb;letter-spacing:.06em;text-transform:uppercase;margin-bottom:1.25rem}
+.veloc-svg-wrap{width:100%;max-width:320px;margin:0 auto 1rem}
+.veloc-nivel{font-size:17px;font-weight:600;margin-bottom:.5rem}
+.veloc-desc{font-size:13px;color:#777;line-height:1.65;max-width:400px;margin:0 auto}
+
+/* GRID DIMS */
 .dims-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:10px}
 .dim-card{background:#fff;border:1px solid #e8e8e5;border-radius:12px;padding:.9rem .75rem;text-align:center}
-.dim-card-nome{font-size:10px;color:#aaa;margin-bottom:5px;line-height:1.3;min-height:26px;display:flex;align-items:center;justify-content:center}
-.dim-card-val{font-size:22px;font-weight:600;color:#1a1a1a}
+.dim-card-nome{font-size:10px;color:#aaa;margin-bottom:5px;line-height:1.3;min-height:28px;display:flex;align-items:center;justify-content:center}
+.dim-card-val{font-size:22px;font-weight:600}
+.dim-bar{height:3px;border-radius:2px;margin-top:6px;transition:width .6s ease}
+
+/* INSIGHTS */
 .insights{background:#fff;border:1px solid #e8e8e5;border-radius:16px;padding:1.5rem 2rem;margin-bottom:10px}
 .insights h3{font-size:15px;font-weight:600;margin-bottom:1rem}
 .ins-item{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid #f0f0ee;font-size:13px;line-height:1.6;color:#555}
 .ins-item:last-child{border-bottom:none;padding-bottom:0}
 .ins-ic{font-size:14px;font-weight:700;flex-shrink:0;width:18px;margin-top:1px}
+
+/* OBRIGADO */
 .obrigado{background:#f7fbff;border:1px solid #b5d4f4;border-radius:16px;padding:1.5rem 2rem;text-align:center}
 .obrigado h3{font-size:15px;font-weight:600;color:#0c447c;margin-bottom:.5rem}
 .obrigado p{font-size:13px;color:#185fa5;line-height:1.65}
-.enviando{text-align:center;font-size:13px;color:#bbb;padding:1.5rem 0;display:none}
+
 @media(max-width:520px){
   .fg{grid-template-columns:1fr}
   .dims-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .q-texto{font-size:16px}
-  .score-num{font-size:54px}
   .card{padding:1.5rem}
 }
 </style>
@@ -74,14 +85,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <div class="logo">OmniScore</div>
   <div class="prog-wrap">
     <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
-    <div class="prog-meta"><span id="progLabel">Identificação</span><span id="progPct"></span></div>
+    <div class="prog-meta"><span id="progLabel">Contexto do diagnóstico</span><span id="progPct"></span></div>
   </div>
 
   <!-- CADASTRO -->
   <div id="stepCad">
     <div class="card">
-      <div class="cad-titulo">Antes de começar, se identifique</div>
-      <div class="cad-sub">Seus dados ficam só com a gente. Nenhum spam.</div>
+      <div class="cad-titulo">Contextualize o seu diagnóstico</div>
+      <div class="cad-sub">O resultado é personalizado com base no seu perfil e empresa. Esses dados não são compartilhados — servem apenas para contextualizar as respostas e gerar um diagnóstico mais preciso.</div>
       <div class="fg">
         <div class="fl"><label>Nome completo</label><input id="f-nome" type="text" placeholder="Seu nome"></div>
         <div class="fl"><label>E-mail</label><input id="f-email" type="email" placeholder="voce@empresa.com"></div>
@@ -95,7 +106,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       </div>
     </div>
     <div class="nav-row">
-      <button class="btn btn-p" onclick="iniciar()">Começar o diagnóstico →</button>
+      <button class="btn btn-p" onclick="iniciar()">Iniciar diagnóstico →</button>
     </div>
   </div>
 
@@ -111,7 +122,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
   <!-- RESULTADO -->
   <div class="resultado" id="stepRes">
-    <div class="enviando" id="enviando">Calculando seu resultado...</div>
+    <div class="enviando" id="enviando">Gerando seu diagnóstico inicial...</div>
     <div id="resConteudo"></div>
   </div>
 </div>
@@ -120,30 +131,41 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 const WEBHOOK='https://script.google.com/macros/s/AKfycbyb0mEFo3KPO2YlIdivVVDAyPfZXTkosLb8PCdw6sGFy0VgnAtbNjfyArMNonveB6Wy1Q/exec';
 
 const QS=[
+  /* ── DADOS E TECNOLOGIA (0-4) ── */
   {dim:'Dados e tecnologia',
    texto:'Como os dados do cliente são unificados entre os canais da sua empresa?',
    opcoes:['Cada canal tem sua própria base — não se comunicam','Há integração, mas é manual ou parcial e gera inconsistências','Sistema centralizado funcionando, mas ainda com gaps relevantes','Visão única do cliente em tempo real em todos os canais']},
   {dim:'Dados e tecnologia',
-   texto:'Como é a integração entre os sistemas principais da operação — ERP, e-commerce e PDV das lojas?',
+   texto:'Como é a integração entre os sistemas principais — ERP, e-commerce e PDV das lojas?',
    opcoes:['Sistemas isolados, cada um opera de forma independente','Integração existe, mas depende de processos manuais frequentes','Integração via API, mas com falhas e ajustes recorrentes','Integração estável e confiável entre todos os sistemas críticos']},
   {dim:'Dados e tecnologia',
    texto:'A empresa usa dados de comportamento do cliente para personalizar comunicação e ofertas?',
    opcoes:['Não usamos dados para personalização','Segmentação básica por e-mail, sem dados de loja física','Personalização no digital, sem considerar o comportamento offline','Personalização ativa em todos os canais com base em histórico unificado']},
   {dim:'Dados e tecnologia',
    texto:'Existem dashboards que mostram o desempenho omnichannel de forma integrada para a gestão?',
-   opcoes:['Não há acompanhamento estruturado — usamos relatórios avulsos','Relatórios manuais em planilhas, sem periodicidade fixa','Dashboard parcial, cobre alguns canais ou métricas mas não todos','BI consolidado com todos os canais, atualização automática e uso gerencial']},
+   opcoes:['Não há acompanhamento estruturado — usamos relatórios avulsos','Relatórios manuais em planilhas, sem periodicidade fixa','Dashboard parcial, cobre alguns canais mas não todos','BI consolidado com todos os canais, atualização automática e uso gerencial']},
+  {dim:'Dados e tecnologia',
+   texto:'Como é feita a gestão da identidade do cliente entre canais — reconhecimento por CPF, login ou programa de fidelidade?',
+   opcoes:['Não há reconhecimento do cliente entre canais','Identificação manual pelo vendedor na loja física','Login unificado no digital, mas sem vínculo com a loja física','Identificação automática e unificada em todos os pontos de contato']},
+
+  /* ── JORNADA DO CLIENTE (5-9) ── */
   {dim:'Jornada do cliente',
-   texto:'O cliente consegue transitar entre canais sem perder contexto — iniciar no digital e resolver na loja, por exemplo?',
-   opcoes:['Não — cada canal é uma experiência completamente separada','Em alguns fluxos específicos, mas não é a regra geral','Na maioria das jornadas, mas ainda com pontos de fricção','Sim — a experiência é fluida em qualquer canal que o cliente escolha']},
+   texto:'O cliente consegue transitar entre canais sem perder contexto — iniciar no app e resolver na loja, por exemplo?',
+   opcoes:['Não — cada canal é uma experiência completamente separada','Em alguns fluxos específicos, mas não é a regra geral','Na maioria das jornadas, mas ainda com pontos de fricção','Sim — experiência fluida em qualquer canal que o cliente escolha']},
   {dim:'Jornada do cliente',
    texto:'Como funciona troca ou devolução para quem comprou em um canal e quer resolver em outro?',
    opcoes:['Não é possível — troca só acontece no mesmo canal da compra','É possível, mas o processo é burocrático e gera atrito','Funciona, mas depende de consulta manual ao histórico','Processo fluido — cliente resolve em qualquer canal sem esforço']},
   {dim:'Jornada do cliente',
-   texto:'O programa de fidelidade ou benefícios da empresa funciona de forma unificada entre canais?',
+   texto:'O programa de fidelidade ou benefícios funciona de forma unificada entre canais?',
    opcoes:['Não há programa de fidelidade','Existe, mas pontos e benefícios são separados por canal','Acúmulo unificado, mas resgate restrito a um canal','Acúmulo e resgate integrados em qualquer canal']},
   {dim:'Jornada do cliente',
-   texto:'Quando um cliente aciona o atendimento, o agente tem acesso ao histórico completo em todos os canais?',
+   texto:'Quando um cliente aciona o atendimento, o agente tem acesso ao histórico completo de todos os canais?',
    opcoes:['Cada canal vê apenas o histórico do próprio canal','Histórico parcial disponível, mas com lacunas relevantes','Histórico digital disponível, mas compras na loja física não aparecem','Histórico completo e acessível em qualquer ponto de atendimento']},
+  {dim:'Jornada do cliente',
+   texto:'A comunicação de marketing — e-mail, push, SMS — considera o comportamento do cliente em todos os canais, incluindo loja física?',
+   opcoes:['Comunicação genérica, igual para todos','Segmentação básica por comportamento digital apenas','Personalização digital avançada, mas sem dados da loja física','Comunicação integrada com comportamento unificado de todos os canais']},
+
+  /* ── LOGÍSTICA E ESTOQUE (10-14) ── */
   {dim:'Logística e estoque',
    texto:'O que o sistema mostra de estoque bate com o que está disponível na prática entre os canais?',
    opcoes:['Cada canal tem estoque separado — não há visibilidade cruzada','Há visibilidade, mas com defasagem — os dados frequentemente não batem','Visibilidade razoável, com exceções e ajustes pontuais','Estoque unificado e confiável em tempo real em todos os canais']},
@@ -156,6 +178,11 @@ const QS=[
   {dim:'Logística e estoque',
    texto:'Existem SLAs definidos e acompanhados para as modalidades de entrega omnichannel?',
    opcoes:['Não há SLAs definidos para modalidades omnichannel','SLAs informais, sem monitoramento sistemático','SLAs definidos, mas monitorados manualmente com gaps','SLAs monitorados com alertas automáticos de desvio']},
+  {dim:'Logística e estoque',
+   texto:'Como a empresa lida com rupturas de estoque em pedidos omnichannel — produto vendido mas indisponível para separação?',
+   opcoes:['A ruptura é descoberta depois da venda, gerando cancelamento','Identificamos a ruptura, mas o processo de resolução é manual e lento','Temos alertas configurados, mas a ação corretiva ainda é manual','Gestão preditiva — sistema redireciona ou bloqueia a venda antes da ruptura']},
+
+  /* ── CULTURA E TIMES (15-19) ── */
   {dim:'Cultura e times',
    texto:'Existe alguém com responsabilidade clara e dedicada pela estratégia omnichannel na empresa?',
    opcoes:['Não — responsabilidade diluída entre áreas sem coordenação','Existe um responsável, mas sem equipe, orçamento ou autonomia real','Há uma área dedicada, ainda em estruturação','Time com liderança clara, orçamento e OKRs próprios']},
@@ -163,32 +190,45 @@ const QS=[
    texto:'Os times de loja física têm incentivo para apoiar as vendas digitais, ou existe conflito interno?',
    opcoes:['Conflito claro — a loja sente que o digital compete com ela','Não há conflito direto, mas também não há colaboração real','Estamos testando modelos de comissionamento compartilhado','Modelo unificado funcionando — loja e digital trabalham para o mesmo resultado']},
   {dim:'Cultura e times',
-   texto:'Existe um processo formal de gestão e priorização de projetos omnichannel — backlog, responsáveis e critério de conclusão?',
+   texto:'Existe um processo formal de gestão de projetos omnichannel — backlog, responsáveis e critério de conclusão definidos?',
    opcoes:['Projetos surgem de forma ad hoc, sem metodologia','Processo informal, sem backlog ou priorização estruturada','Metodologia ágil em uso, mas desconectada das metas de negócio','Backlog priorizado, owners definidos, sprint reviews e OKRs conectados']},
   {dim:'Cultura e times',
    texto:'O omnichannel está na agenda estratégica da liderança sênior, com revisão periódica e recursos alocados?',
    opcoes:['Não está na agenda da liderança','Reconhecido como importante, mas sem recursos alocados','Na agenda com recursos, mas sem revisão periódica de resultados','Pauta de revisão estratégica com OKRs monitorados pelo C-level']},
+  {dim:'Cultura e times',
+   texto:'Os times de loja física recebem treinamento periódico sobre ferramentas e processos omnichannel?',
+   opcoes:['Sem treinamento específico para omnichannel','Treinamento pontual na implantação, sem reciclagem','Treinamento periódico, mas com cobertura parcial da rede','Programa de capacitação contínua para toda a rede com acompanhamento']},
+
+  /* ── EXPERIÊNCIA DO CLIENTE (20-22) ── */
   {dim:'Experiência do cliente',
    texto:'Como você avalia a consistência da experiência do cliente ao interagir com a marca em canais diferentes?',
    opcoes:['Muito inconsistente — preço, informação e atendimento variam bastante','Inconsistências relevantes que geram reclamações recorrentes','Razoavelmente consistente, com pontos de melhoria já identificados','Experiência reconhecidamente consistente em todos os canais']},
   {dim:'Experiência do cliente',
    texto:'A empresa monitora e age sobre o que os clientes dizem sobre a experiência omnichannel — reclamações, avaliações, NPS?',
    opcoes:['Não monitoramos de forma sistemática','Monitoramos, mas a resposta é reativa e sem análise de causa raiz','Monitoramento ativo com respostas, mas sem melhoria estruturada de processos','Ciclo completo: monitoramento, causa raiz, ação corretiva e acompanhamento']},
+  {dim:'Experiência do cliente',
+   texto:'A experiência na loja física foi redesenhada para integrar o digital — vendedores com acesso ao histórico online, catálogo digital disponível?',
+   opcoes:['A loja física opera exatamente como antes do omnichannel','Algumas ferramentas digitais disponíveis, mas sem adoção consistente','Loja com ferramentas digitais em parte da rede com boa adoção','Loja física completamente redesenhada como hub omnichannel em toda a rede']},
+
+  /* ── PERFORMANCE E RESULTADOS (23-25) ── */
   {dim:'Performance e resultados',
    texto:'A empresa acompanha indicadores específicos de omnichannel além do faturamento por canal?',
    opcoes:['Não — só acompanhamos receita por canal','Alguns KPIs básicos, mas sem visão consolidada','Dashboard com métricas omnichannel, mas cobertura parcial','Visão completa: penetração omni, NPS por canal, custo de servir, LTV cross-canal']},
   {dim:'Performance e resultados',
    texto:'Os resultados das iniciativas omnichannel chegam à liderança com frequência e formato estruturado?',
-   opcoes:['Não chegam — não há reporte formal para a liderança','Chegam esporadicamente, sem formato ou frequência definida','Revisão mensal existe, mas sem estrutura para tomada de decisão','Revisão regular com apresentação estruturada e decisões orientadas por dados']}
+   opcoes:['Não chegam — não há reporte formal para a liderança','Chegam esporadicamente, sem formato ou frequência definida','Revisão mensal existe, mas sem estrutura para tomada de decisão','Revisão regular com apresentação estruturada e decisões orientadas por dados']},
+  {dim:'Performance e resultados',
+   texto:'A empresa mede o valor gerado pelos clientes que compram em mais de um canal — LTV cross-canal, retenção, ticket médio?',
+   opcoes:['Não medimos por perfil de comportamento de canal','Medimos receita total, mas sem distinção de clientes omnichannel','Temos essa visão, mas ela não orienta as decisões de investimento','Clientes omnichannel têm LTV comprovadamente maior e isso orienta nossa estratégia']}
 ];
 
 const DIMS=[
-  {id:'dados',      label:'Dados e tecnologia',    qs:[0,1,2,3],    peso:20},
-  {id:'jornada',    label:'Jornada do cliente',    qs:[4,5,6,7],    peso:20},
-  {id:'logistica',  label:'Logística e estoque',   qs:[8,9,10,11],  peso:20},
-  {id:'cultura',    label:'Cultura e times',       qs:[12,13,14,15],peso:20},
-  {id:'cx',         label:'Experiência do cliente',qs:[16,17],      peso:10},
-  {id:'performance',label:'Performance',           qs:[18,19],      peso:10}
+  {id:'dados',      label:'Dados e tecnologia',    qs:[0,1,2,3,4],     peso:20},
+  {id:'jornada',    label:'Jornada do cliente',    qs:[5,6,7,8,9],     peso:20},
+  {id:'logistica',  label:'Logística e estoque',   qs:[10,11,12,13,14],peso:20},
+  {id:'cultura',    label:'Cultura e times',       qs:[15,16,17,18,19],peso:20},
+  {id:'cx',         label:'Experiência do cliente',qs:[20,21,22],      peso:10},
+  {id:'performance',label:'Performance',           qs:[23,24,25],      peso:10}
 ];
 
 const NIVEIS=[
@@ -207,7 +247,7 @@ function atualizarProg(i){
   const p=Math.round((i+1)/(QS.length+1)*100);
   document.getElementById('progFill').style.width=p+'%';
   document.getElementById('progPct').textContent=p+'%';
-  document.getElementById('progLabel').textContent=i<0?'Identificação':QS[i].dim+' · '+(i+1)+' de '+QS.length;
+  document.getElementById('progLabel').textContent=i<0?'Contexto do diagnóstico':QS[i].dim+' · '+(i+1)+' de '+QS.length;
 }
 
 function iniciar(){
@@ -287,26 +327,109 @@ function calcScores(){
   return{dims:dimPcts,total};
 }
 
+function dimCor(v){
+  if(v===null)return'#ccc';
+  if(v>=65)return'#3b6d11';
+  if(v>=40)return'#ba7517';
+  return'#e24b4a';
+}
+
 function gerarInsights(scores){
   const comDados=DIMS.filter(d=>scores.dims[d.id]!==null);
   const ord=[...comDados].sort((a,b)=>scores.dims[a.id]-scores.dims[b.id]);
   const pior=ord[0];
   const melhor=ord[ord.length-1];
   const items=[];
-
-  if(pior) items.push({ic:'↓',cor:'#e24b4a',txt:`<strong>${pior.label}</strong> é o maior gap da sua operação (${scores.dims[pior.id]}%). É onde a falta de maturidade mais impacta a experiência do cliente e a eficiência do negócio.`});
-
-  if(ord[1]&&scores.dims[ord[1].id]<55) items.push({ic:'→',cor:'#ba7517',txt:`<strong>${ord[1].label}</strong> também merece atenção (${scores.dims[ord[1].id]}%). Costuma ser a segunda prioridade de evolução depois de tratar o gap principal.`});
-
-  if(scores.dims['cultura']!==null&&scores.dims['cultura']<50) items.push({ic:'↓',cor:'#e24b4a',txt:'<strong>Cultura e times</strong> abaixo de 50% é um alerta importante. Tecnologia sem alinhamento de incentivos e governança raramente sustenta evolução omnichannel.'});
-
-  if(scores.total<50) items.push({ic:'→',cor:'#ba7517',txt:'Em operações no estágio inicial, o maior risco é tentar evoluir vários pontos ao mesmo tempo. Concentrar esforço em uma ou duas dimensões gera resultado mais rápido e sustentável.'});
-
-  if(melhor&&scores.dims[melhor.id]>=65) items.push({ic:'↑',cor:'#3b6d11',txt:`<strong>${melhor.label}</strong> é o ponto mais maduro da sua operação (${scores.dims[melhor.id]}%). Importante preservar esse nível enquanto as demais dimensões evoluem.`});
-
-  if(scores.total>=70) items.push({ic:'↑',cor:'#3b6d11',txt:'Com score acima de 70%, a empresa já tem uma base omnichannel relevante. O próximo passo é identificar os últimos pontos de fricção e trabalhar otimização e escalabilidade.'});
-
+  if(pior)items.push({ic:'↓',cor:'#e24b4a',txt:`<strong>${pior.label}</strong> é o maior gap da sua operação (${scores.dims[pior.id]}%). É onde a falta de maturidade mais impacta a experiência do cliente e a eficiência do negócio.`});
+  if(ord[1]&&scores.dims[ord[1].id]<55)items.push({ic:'→',cor:'#ba7517',txt:`<strong>${ord[1].label}</strong> também merece atenção (${scores.dims[ord[1].id]}%). Costuma ser a segunda prioridade depois de tratar o gap principal.`});
+  if(scores.dims['cultura']!==null&&scores.dims['cultura']<50)items.push({ic:'↓',cor:'#e24b4a',txt:'<strong>Cultura e times</strong> abaixo de 50% é um alerta importante. Tecnologia sem alinhamento de incentivos e governança raramente sustenta evolução omnichannel.'});
+  if(scores.total<50)items.push({ic:'→',cor:'#ba7517',txt:'Em operações no estágio inicial, o maior risco é tentar evoluir vários pontos ao mesmo tempo. Concentrar esforço em uma ou duas dimensões gera resultado mais rápido e sustentável.'});
+  if(melhor&&scores.dims[melhor.id]>=65)items.push({ic:'↑',cor:'#3b6d11',txt:`<strong>${melhor.label}</strong> é o ponto mais maduro da operação (${scores.dims[melhor.id]}%). Importante preservar esse nível enquanto as demais dimensões evoluem.`});
+  if(scores.total>=70)items.push({ic:'↑',cor:'#3b6d11',txt:'Com score acima de 70%, a empresa já tem uma base omnichannel relevante. O foco agora é otimização, escala e eliminação dos últimos pontos de fricção.'});
   return items;
+}
+
+function buildVelocimetro(score, cor){
+  const R=110, cx=160, cy=145;
+  const startAngle=Math.PI;
+  const endAngle=2*Math.PI;
+  const frac=score/100;
+  const needleAngle=startAngle+frac*Math.PI;
+
+  function arc(pct, color, strokeW){
+    const sa=startAngle, ea=startAngle+pct*Math.PI;
+    const x1=cx+R*Math.cos(sa), y1=cy+R*Math.sin(sa);
+    const x2=cx+R*Math.cos(ea), y2=cy+R*Math.sin(ea);
+    const large=pct>0.5?1:0;
+    return`<path d="M${x1},${y1} A${R},${R} 0 ${large},1 ${x2},${y2}" fill="none" stroke="${color}" stroke-width="${strokeW}" stroke-linecap="round"/>`;
+  }
+
+  const zones=[
+    {from:0,  to:.25, color:'#f09595'},
+    {from:.25,to:.50, color:'#FAC775'},
+    {from:.50,to:.70, color:'#EF9F27'},
+    {from:.70,to:.88, color:'#97C459'},
+    {from:.88,to:1,   color:'#5DCAA5'}
+  ];
+
+  const nx=cx+85*Math.cos(needleAngle);
+  const ny=cy+85*Math.sin(needleAngle);
+
+  const ticks=[
+    {pct:0,   label:'0'},
+    {pct:.25, label:'25'},
+    {pct:.50, label:'50'},
+    {pct:.70, label:'70'},
+    {pct:.88, label:'88'},
+    {pct:1,   label:'100'}
+  ];
+
+  const ticksSvg=ticks.map(t=>{
+    const a=startAngle+t.pct*Math.PI;
+    const tx=cx+(R+18)*Math.cos(a);
+    const ty=cy+(R+18)*Math.sin(a);
+    return`<text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="#bbb" font-family="-apple-system,sans-serif">${t.label}</text>`;
+  }).join('');
+
+  const levelLabels=[
+    {pct:.125,label:'Fragmentado'},
+    {pct:.375,label:'Iniciante'},
+    {pct:.60, label:'Em desenv.'},
+    {pct:.79, label:'Avançado'},
+    {pct:.94, label:'Referência'}
+  ].map(t=>{
+    const a=startAngle+t.pct*Math.PI;
+    const tx=cx+(R-28)*Math.cos(a);
+    const ty=cy+(R-28)*Math.sin(a);
+    return`<text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-size="7.5" fill="#aaa" font-family="-apple-system,sans-serif">${t.label}</text>`;
+  }).join('');
+
+  return`
+  <svg viewBox="0 0 320 165" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block">
+    <!-- trilha de fundo -->
+    <path d="M${cx-R},${cy} A${R},${R} 0 0,1 ${cx+R},${cy}" fill="none" stroke="#f0f0ee" stroke-width="18" stroke-linecap="round"/>
+    <!-- zonas coloridas -->
+    ${zones.map(z=>{
+      const sa=startAngle+z.from*Math.PI;
+      const ea=startAngle+z.to*Math.PI;
+      const x1=(cx+R*Math.cos(sa)).toFixed(2);
+      const y1=(cy+R*Math.sin(sa)).toFixed(2);
+      const x2=(cx+R*Math.cos(ea)).toFixed(2);
+      const y2=(cy+R*Math.sin(ea)).toFixed(2);
+      const large=(z.to-z.from)>0.5?1:0;
+      return`<path d="M${x1},${y1} A${R},${R} 0 ${large},1 ${x2},${y2}" fill="none" stroke="${z.color}" stroke-width="18" stroke-linecap="butt" opacity="0.85"/>`;
+    }).join('')}
+    <!-- labels de nível -->
+    ${levelLabels}
+    <!-- ticks numéricos -->
+    ${ticksSvg}
+    <!-- agulha -->
+    <line x1="${cx}" y1="${cy}" x2="${nx.toFixed(2)}" y2="${ny.toFixed(2)}" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy}" r="7" fill="#1a1a1a"/>
+    <circle cx="${cx}" cy="${cy}" r="3.5" fill="#fff"/>
+    <!-- score central -->
+    <text x="${cx}" y="${cy+28}" text-anchor="middle" font-size="28" font-weight="700" fill="${cor}" font-family="-apple-system,sans-serif">${score}%</text>
+  </svg>`;
 }
 
 function mostrarResultado(){
@@ -315,7 +438,7 @@ function mostrarResultado(){
   document.getElementById('enviando').style.display='block';
   document.getElementById('progFill').style.width='100%';
   document.getElementById('progPct').textContent='100%';
-  document.getElementById('progLabel').textContent='Resultado';
+  document.getElementById('progLabel').textContent='Diagnóstico inicial';
   window.scrollTo({top:0,behavior:'smooth'});
 
   const scores=calcScores();
@@ -349,33 +472,42 @@ function mostrarResultado(){
 
   setTimeout(()=>{
     document.getElementById('enviando').style.display='none';
+    const velocSvg=buildVelocimetro(scores.total,nivel.cor);
     document.getElementById('resConteudo').innerHTML=`
-      <div class="score-hero">
-        <div class="score-rotulo">Score geral de maturidade</div>
-        <div class="score-num" style="color:${nivel.cor}">${scores.total}%</div>
-        <div class="score-nivel" style="color:${nivel.cor}">${nivel.label}</div>
-        <div class="score-desc">${nivel.desc}</div>
+
+      <div class="veloc-card">
+        <div class="veloc-rotulo">Diagnóstico inicial de maturidade omnichannel</div>
+        <div class="veloc-svg-wrap">${velocSvg}</div>
+        <div class="veloc-nivel" style="color:${nivel.cor}">${nivel.label}</div>
+        <div class="veloc-desc">${nivel.desc}</div>
       </div>
+
       <div class="dims-grid">
-        ${DIMS.map(d=>`
-          <div class="dim-card">
+        ${DIMS.map(d=>{
+          const v=scores.dims[d.id];
+          const c=dimCor(v);
+          return`<div class="dim-card">
             <div class="dim-card-nome">${d.label}</div>
-            <div class="dim-card-val" style="color:${scores.dims[d.id]!==null?(scores.dims[d.id]>=65?'#3b6d11':scores.dims[d.id]>=40?'#ba7517':'#e24b4a'):'#bbb'}">${scores.dims[d.id]!==null?scores.dims[d.id]+'%':'—'}</div>
-          </div>
-        `).join('')}
+            <div class="dim-card-val" style="color:${c}">${v!==null?v+'%':'—'}</div>
+            <div class="dim-bar" style="background:${c};width:${v!==null?v:0}%"></div>
+          </div>`;
+        }).join('')}
       </div>
+
       <div class="insights">
-        <h3>O que o seu resultado indica</h3>
+        <h3>O que esse diagnóstico inicial revela</h3>
         ${insights.map(it=>`
           <div class="ins-item">
-            <div class="ins-ic" style="color:${it.cor};font-weight:700">${it.ic}</div>
+            <div class="ins-ic" style="color:${it.cor}">${it.ic}</div>
             <div>${it.txt}</div>
           </div>
         `).join('')}
       </div>
+
       <div class="obrigado">
-        <h3>Diagnóstico concluído</h3>
-        <p>Obrigado por dedicar alguns minutos a esse diagnóstico.<br>Esperamos que o resultado traga uma visão clara de onde sua operação está e para onde faz sentido evoluir.</p>
+        <h3>Diagnóstico inicial concluído</h3>
+        <p>Este é um diagnóstico de primeiro nível — desenvolvido para dar uma visão clara e rápida sobre a maturidade omnichannel da sua operação.<br><br>
+        Use os resultados como ponto de partida para conversas internas, definição de prioridades e identificação das dimensões que mais precisam de atenção.</p>
       </div>
     `;
   },2000);
