@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>OmniScore — Diagnóstico Omnichannel</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -35,6 +38,577 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .capa-btn:hover{background:#0c447c}
 .capa-voltar{margin-top:1rem;text-align:center}
 .capa-voltar button{background:none;border:none;font-size:13px;color:#bbb;cursor:pointer;padding:4px 8px}
+.capa-voltar button:hover{color:#888}
+.capa-pills{display:flex;gap:16px;justify-content:center;margin-top:1.5rem;flex-wrap:wrap}
+.capa-pill{font-size:12px;color:#bbb;display:flex;align-items:center;gap:5px}
+.capa-pill-dot{width:6px;height:6px;border-radius:50%;background:#ddd}
+.q-wrap{display:none}
+.q-wrap.ativa{display:block}
+.q-dim{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#185fa5;margin-bottom:.9rem}
+.q-texto{font-size:18px;font-weight:500;color:#1a1a1a;line-height:1.4;margin-bottom:1.75rem}
+.opcoes{display:flex;flex-direction:column;gap:9px}
+.opcao{display:flex;align-items:flex-start;gap:13px;padding:13px 15px;border:1px solid #e8e8e5;border-radius:10px;cursor:pointer;transition:all .15s;font-size:14px;color:#444;line-height:1.45;user-select:none}
+.opcao:hover{border-color:#b5d4f4;background:#f7fbff}
+.opcao.sel{border-color:#378add;background:#e6f1fb;color:#0c447c}
+.opcao-letra{min-width:22px;height:22px;border-radius:50%;border:1.5px solid #ddd;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#bbb;flex-shrink:0;margin-top:1px;transition:all .15s}
+.opcao.sel .opcao-letra{background:#185fa5;border-color:#185fa5;color:#fff}
+.q-nav{display:flex;align-items:center;justify-content:space-between;margin-top:1.5rem}
+.q-hint{font-size:12px;color:#ccc}
+.btn{padding:10px 22px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#555;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s}
+.btn:hover:not(:disabled){background:#f5f5f3}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn-p{background:#185fa5;color:#fff;border-color:#185fa5}
+.btn-p:hover:not(:disabled){background:#0c447c}
+.resultado{display:none}
+.enviando{text-align:center;font-size:13px;color:#bbb;padding:2rem 0;display:none}
+/* RESULTADO — gauge card */
+.res-gauge-card{background:#fff;border:1px solid #e8e8e5;border-radius:16px;padding:1.75rem 1.5rem 1.5rem;text-align:center;margin-bottom:10px}
+.res-rotulo{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#bbb;margin-bottom:1.25rem}
+.res-gauge-wrap{width:100%;max-width:300px;margin:0 auto .25rem}
+.res-nivel{font-size:17px;font-weight:600;margin-bottom:.5rem;margin-top:.25rem}
+.res-nivel-desc{font-size:13px;color:#777;line-height:1.65;max-width:380px;margin:0 auto}
+/* RESULTADO — dimensões em lista */
+.res-dims{background:#fff;border:1px solid #e8e8e5;border-radius:16px;padding:1.25rem 1.5rem;margin-bottom:10px}
+.dim-card{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid #f5f5f3}
+.dim-card:last-child{border-bottom:none;padding-bottom:0}
+.dim-card-nome{font-size:13px;color:#555;flex:1;text-align:left;min-height:auto}
+.dim-card-val{font-size:15px;font-weight:600;min-width:44px;text-align:right}
+.dim-bar-wrap{width:80px;flex-shrink:0}
+.dim-bar{height:4px;border-radius:2px;background:#e8e8e5;overflow:hidden}
+.dim-bar-fill{height:100%;border-radius:2px;transition:width .6s ease}
+.insights{background:#fff;border:1px solid #e8e8e5;border-radius:16px;padding:1.5rem 2rem;margin-bottom:10px}
+.insights h3{font-size:15px;font-weight:600;margin-bottom:1rem}
+.ins-item{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid #f0f0ee;font-size:13px;line-height:1.6;color:#555}
+.ins-item:last-child{border-bottom:none;padding-bottom:0}
+.ins-ic{font-size:14px;font-weight:700;flex-shrink:0;width:18px;margin-top:1px}
+.obrigado{background:#f7fbff;border:1px solid #b5d4f4;border-radius:16px;padding:1.5rem 2rem;text-align:center}
+.obrigado h3{font-size:15px;font-weight:600;color:#0c447c;margin-bottom:.5rem}
+.obrigado p{font-size:13px;color:#185fa5;line-height:1.65}
+@media(max-width:520px){
+  .fg{grid-template-columns:1fr}
+  .dims-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .q-texto{font-size:16px}
+  .card{padding:1.5rem}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="logo">OmniScore</div>
+  <div class="prog-wrap">
+    <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    <div class="prog-meta"><span id="progLabel">Contexto do diagnóstico</span><span id="progPct"></span></div>
+  </div>
+
+  <!-- CADASTRO -->
+  <div id="stepCad">
+    <div class="card">
+      <div class="cad-titulo">Contextualize o seu diagnóstico</div>
+      <div class="cad-sub">O resultado é personalizado com base no seu perfil e empresa. Esses dados não são compartilhados — servem apenas para contextualizar as respostas e gerar um diagnóstico mais preciso.</div>
+      <div class="fg">
+        <div class="fl"><label>Nome completo</label><input id="f-nome" type="text" placeholder="Seu nome"></div>
+        <div class="fl"><label>E-mail</label><input id="f-email" type="email" placeholder="voce@empresa.com"></div>
+      </div>
+      <div class="fg">
+        <div class="fl"><label>WhatsApp</label><input id="f-whatsapp" type="tel" placeholder="(51) 99999-9999"></div>
+        <div class="fl"><label>Empresa</label><input id="f-empresa" type="text" placeholder="Nome da empresa"></div>
+      </div>
+      <div class="fg un">
+        <div class="fl"><label>Cargo / área</label><input id="f-cargo" type="text" placeholder="Ex: Gerente de E-commerce"></div>
+      </div>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-p" onclick="iniciar()">Iniciar diagnóstico →</button>
+    </div>
+  </div>
+
+  <!-- PERGUNTAS + CAPAS -->
+  <div id="stepQ" style="display:none">
+    <div id="qWrap"></div>
+    <div class="q-nav">
+      <button class="btn" id="btnV" onclick="navVoltar()">← Voltar</button>
+      <span class="q-hint" id="qHint"></span>
+      <button class="btn btn-p" id="btnA" onclick="navAvancar()" disabled>Próxima →</button>
+    </div>
+  </div>
+
+  <!-- RESULTADO -->
+  <div class="resultado" id="stepRes">
+    <div class="enviando" id="enviando">Gerando seu diagnóstico inicial...</div>
+    <div id="resConteudo"></div>
+  </div>
+
+</div>
+<script>
+var WEBHOOK='https://script.google.com/macros/s/AKfycbyb0mEFo3KPO2YlIdivVVDAyPfZXTkosLb8PCdw6sGFy0VgnAtbNjfyArMNonveB6Wy1Q/exec';
+
+var QS=[
+  /* BLOCO 0 — Dados e tecnologia: Q0-Q4 */
+  {dim:'Dados e tecnologia', texto:'Como os dados do cliente são unificados entre os canais da sua empresa?', opcoes:['Cada canal tem sua própria base — não se comunicam','Há integração, mas é manual ou parcial e gera inconsistências','Sistema centralizado funcionando, mas ainda com gaps relevantes','Visão única do cliente em tempo real em todos os canais']},
+  {dim:'Dados e tecnologia', texto:'Como é a integração entre os sistemas principais — ERP, e-commerce e PDV das lojas?', opcoes:['Sistemas isolados, cada um opera de forma independente','Integração existe, mas depende de processos manuais frequentes','Integração via API, mas com falhas e ajustes recorrentes','Integração estável e confiável entre todos os sistemas críticos']},
+  {dim:'Dados e tecnologia', texto:'A empresa usa dados de comportamento do cliente para personalizar comunicação e ofertas?', opcoes:['Não usamos dados para personalização','Segmentação básica por e-mail, sem dados de loja física','Personalização no digital, sem considerar o comportamento offline','Personalização ativa em todos os canais com base em histórico unificado']},
+  {dim:'Dados e tecnologia', texto:'Existem dashboards que mostram o desempenho omnichannel de forma integrada para a gestão?', opcoes:['Não há acompanhamento estruturado — usamos relatórios avulsos','Relatórios manuais em planilhas, sem periodicidade fixa','Dashboard parcial, cobre alguns canais mas não todos','BI consolidado com todos os canais, atualização automática e uso gerencial']},
+  {dim:'Dados e tecnologia', texto:'Como é feita a gestão da identidade do cliente entre canais — reconhecimento por CPF, login ou programa de fidelidade?', opcoes:['Não há reconhecimento do cliente entre canais','Identificação manual pelo vendedor na loja física','Login unificado no digital, mas sem vínculo com a loja física','Identificação automática e unificada em todos os pontos de contato']},
+
+  /* BLOCO 1 — Jornada do cliente: Q5-Q9 */
+  {dim:'Jornada do cliente', texto:'O cliente consegue transitar entre canais sem perder contexto — iniciar no app e resolver na loja, por exemplo?', opcoes:['Não — cada canal é uma experiência completamente separada','Em alguns fluxos específicos, mas não é a regra geral','Na maioria das jornadas, mas ainda com pontos de fricção','Sim — experiência fluida em qualquer canal que o cliente escolha']},
+  {dim:'Jornada do cliente', texto:'Como funciona troca ou devolução para quem comprou em um canal e quer resolver em outro?', opcoes:['Não é possível — troca só acontece no mesmo canal da compra','É possível, mas o processo é burocrático e gera atrito','Funciona, mas depende de consulta manual ao histórico','Processo fluido — cliente resolve em qualquer canal sem esforço']},
+  {dim:'Jornada do cliente', texto:'O programa de fidelidade ou benefícios funciona de forma unificada entre canais?', opcoes:['Não há programa de fidelidade','Existe, mas pontos e benefícios são separados por canal','Acúmulo unificado, mas resgate restrito a um canal','Acúmulo e resgate integrados em qualquer canal']},
+  {dim:'Jornada do cliente', texto:'Quando um cliente aciona o atendimento, o agente tem acesso ao histórico completo de todos os canais?', opcoes:['Cada canal vê apenas o histórico do próprio canal','Histórico parcial disponível, mas com lacunas relevantes','Histórico digital disponível, mas compras na loja física não aparecem','Histórico completo e acessível em qualquer ponto de atendimento']},
+  {dim:'Jornada do cliente', texto:'A comunicação de marketing — e-mail, push, SMS — considera o comportamento do cliente em todos os canais, incluindo loja física?', opcoes:['Comunicação genérica, igual para todos','Segmentação básica por comportamento digital apenas','Personalização digital avançada, mas sem dados da loja física','Comunicação integrada com comportamento unificado de todos os canais']},
+
+  /* BLOCO 2 — Logística e estoque: Q10-Q14 */
+  {dim:'Logística e estoque', texto:'O que o sistema mostra de estoque bate com o que está disponível na prática entre os canais?', opcoes:['Cada canal tem estoque separado — não há visibilidade cruzada','Há visibilidade, mas com defasagem — os dados frequentemente não batem','Visibilidade razoável, com exceções e ajustes pontuais','Estoque unificado e confiável em tempo real em todos os canais']},
+  {dim:'Logística e estoque', texto:'As lojas físicas participam ativamente da operação online — Ship from Store, Click & Collect ou similares?', opcoes:['Não — loja física e e-commerce operam de forma completamente separada','Estamos avaliando ou em fase piloto inicial','Operando em algumas lojas, sem escala para toda a rede','Lojas integradas à operação digital com processos definidos e estáveis']},
+  {dim:'Logística e estoque', texto:'Como é tratada a logística reversa — devoluções e trocas que envolvem mais de um canal?', opcoes:['Processo manual, sem rastreamento adequado','Processo definido, mas com muito retrabalho operacional','Estruturado, mas sem integração automática com o estoque','Integrada — devolução reabastece o estoque disponível automaticamente']},
+  {dim:'Logística e estoque', texto:'Existem SLAs definidos e acompanhados para as modalidades de entrega omnichannel?', opcoes:['Não há SLAs definidos para modalidades omnichannel','SLAs informais, sem monitoramento sistemático','SLAs definidos, mas monitorados manualmente com gaps','SLAs monitorados com alertas automáticos de desvio']},
+  {dim:'Logística e estoque', texto:'Como a empresa lida com rupturas de estoque em pedidos omnichannel — produto vendido mas indisponível para separação?', opcoes:['A ruptura é descoberta depois da venda, gerando cancelamento','Identificamos a ruptura, mas o processo de resolução é manual e lento','Temos alertas configurados, mas a ação corretiva ainda é manual','Gestão preditiva — sistema redireciona ou bloqueia a venda antes da ruptura']},
+
+  /* BLOCO 3 — Cultura e times: Q15-Q19 */
+  {dim:'Cultura e times', texto:'Existe alguém com responsabilidade clara e dedicada pela estratégia omnichannel na empresa?', opcoes:['Não — responsabilidade diluída entre áreas sem coordenação','Existe um responsável, mas sem equipe, orçamento ou autonomia real','Há uma área dedicada, ainda em estruturação','Time com liderança clara, orçamento e OKRs próprios']},
+  {dim:'Cultura e times', texto:'Os times de loja física têm incentivo para apoiar as vendas digitais, ou existe conflito interno?', opcoes:['Conflito claro — a loja sente que o digital compete com ela','Não há conflito direto, mas também não há colaboração real','Estamos testando modelos de comissionamento compartilhado','Modelo unificado funcionando — loja e digital trabalham para o mesmo resultado']},
+  {dim:'Cultura e times', texto:'Existe um processo formal de gestão de projetos omnichannel — backlog, responsáveis e critério de conclusão definidos?', opcoes:['Projetos surgem de forma ad hoc, sem metodologia','Processo informal, sem backlog ou priorização estruturada','Metodologia ágil em uso, mas desconectada das metas de negócio','Backlog priorizado, owners definidos, sprint reviews e OKRs conectados']},
+  {dim:'Cultura e times', texto:'O omnichannel está na agenda estratégica da liderança sênior, com revisão periódica e recursos alocados?', opcoes:['Não está na agenda da liderança','Reconhecido como importante, mas sem recursos alocados','Na agenda com recursos, mas sem revisão periódica de resultados','Pauta de revisão estratégica com OKRs monitorados pelo C-level']},
+  {dim:'Cultura e times', texto:'Os times de loja física recebem treinamento periódico sobre ferramentas e processos omnichannel?', opcoes:['Sem treinamento específico para omnichannel','Treinamento pontual na implantação, sem reciclagem','Treinamento periódico, mas com cobertura parcial da rede','Programa de capacitação contínua para toda a rede com acompanhamento']},
+
+  /* BLOCO 4 — Experiência do cliente: Q20-Q22 */
+  {dim:'Experiência do cliente', texto:'Como você avalia a consistência da experiência do cliente ao interagir com a marca em canais diferentes?', opcoes:['Muito inconsistente — preço, informação e atendimento variam bastante','Inconsistências relevantes que geram reclamações recorrentes','Razoavelmente consistente, com pontos de melhoria já identificados','Experiência reconhecidamente consistente em todos os canais']},
+  {dim:'Experiência do cliente', texto:'A empresa monitora e age sobre o que os clientes dizem sobre a experiência omnichannel — reclamações, avaliações, NPS?', opcoes:['Não monitoramos de forma sistemática','Monitoramos, mas a resposta é reativa e sem análise de causa raiz','Monitoramento ativo com respostas, mas sem melhoria estruturada de processos','Ciclo completo: monitoramento, causa raiz, ação corretiva e acompanhamento']},
+  {dim:'Experiência do cliente', texto:'A experiência na loja física foi redesenhada para integrar o digital — vendedores com acesso ao histórico online, catálogo digital disponível?', opcoes:['A loja física opera exatamente como antes do omnichannel','Algumas ferramentas digitais disponíveis, mas sem adoção consistente','Loja com ferramentas digitais em parte da rede com boa adoção','Loja física completamente redesenhada como hub omnichannel em toda a rede']},
+
+  /* BLOCO 5 — Performance e resultados: Q23-Q25 */
+  {dim:'Performance e resultados', texto:'A empresa acompanha indicadores específicos de omnichannel além do faturamento por canal?', opcoes:['Não — só acompanhamos receita por canal','Alguns KPIs básicos, mas sem visão consolidada','Dashboard com métricas omnichannel, mas cobertura parcial','Visão completa: penetração omni, NPS por canal, custo de servir, LTV cross-canal']},
+  {dim:'Performance e resultados', texto:'Os resultados das iniciativas omnichannel chegam à liderança com frequência e formato estruturado?', opcoes:['Não chegam — não há reporte formal para a liderança','Chegam esporadicamente, sem formato ou frequência definida','Revisão mensal existe, mas sem estrutura para tomada de decisão','Revisão regular com apresentação estruturada e decisões orientadas por dados']},
+  {dim:'Performance e resultados', texto:'A empresa mede o valor gerado pelos clientes que compram em mais de um canal — LTV cross-canal, retenção, ticket médio?', opcoes:['Não medimos por perfil de comportamento de canal','Medimos receita total, mas sem distinção de clientes omnichannel','Temos essa visão, mas ela não orienta as decisões de investimento','Clientes omnichannel têm LTV comprovadamente maior e isso orienta nossa estratégia']}
+];
+
+var DIMS=[
+  {id:'dados',      label:'Dados e tecnologia',    inicio:0,  fim:4,  peso:20, bg:'#e6f1fb', iconCor:'#185fa5', desc:'Vamos entender como os dados e sistemas da sua operação se comunicam entre si. Esta dimensão revela se a empresa tem a base tecnológica necessária para operar com coerência entre canais.', itens:['5 perguntas','Integração e dados']},
+  {id:'jornada',    label:'Jornada do cliente',    inicio:5,  fim:9,  peso:20, bg:'#eaf3de', iconCor:'#3b6d11', desc:'Avaliamos o que o cliente realmente vive ao transitar entre os canais. Trocas, atendimento, fidelidade e consistência — o omnichannel que o consumidor enxerga.', itens:['5 perguntas','CX e fluidez']},
+  {id:'logistica',  label:'Logística e estoque',   inicio:10, fim:14, peso:20, bg:'#faeeda', iconCor:'#854f0b', desc:'Esta dimensão avalia a espinha dorsal operacional do omnichannel — estoque, Ship from Store, logística reversa e SLAs. É onde a promessa feita ao cliente é cumprida ou quebrada.', itens:['5 perguntas','Operação e entrega']},
+  {id:'cultura',    label:'Cultura e times',       inicio:15, fim:19, peso:20, bg:'#fbeaf0', iconCor:'#993556', desc:'Tecnologia sem pessoas e governança não sustenta evolução. Aqui avaliamos se a empresa tem estrutura, incentivos e liderança alinhados para executar a estratégia omnichannel.', itens:['5 perguntas','Pessoas e governança']},
+  {id:'cx',         label:'Experiência do cliente',inicio:20, fim:22, peso:10, bg:'#eeedfe', iconCor:'#534ab7', desc:'Mais do que o que a empresa opera internamente, esta dimensão olha para o que o cliente percebe — consistência, satisfação e a loja física como hub de experiência.', itens:['3 perguntas','Percepção do cliente']},
+  {id:'performance',label:'Performance',           inicio:23, fim:25, peso:10, bg:'#e1f5ee', iconCor:'#0f6e56', desc:'A última dimensão avalia se a empresa mede o que importa — KPIs omnichannel, LTV cross-canal e qualidade dos reportes para a liderança tomar decisões por dados.', itens:['3 perguntas','Métricas e decisão']}
+];
+
+var NIVEIS=[
+  {min:0, max:25, label:'Nível 0 — Fragmentado',        cor:'#e24b4a', desc:'A operação ainda funciona em silos. Cada canal é uma ilha — sem integração de dados, processos ou experiência consistente para o cliente.'},
+  {min:25,max:50, label:'Nível 1 — Iniciante',           cor:'#ef9f27', desc:'Há consciência do problema e algumas iniciativas em andamento, mas faltam consistência, governança e integração entre as dimensões.'},
+  {min:50,max:70, label:'Nível 2 — Em desenvolvimento',  cor:'#ba7517', desc:'A empresa está no caminho certo. Existem integrações relevantes, mas com gaps importantes de escala, dados e cultura.'},
+  {min:70,max:88, label:'Nível 3 — Avançado',            cor:'#3b6d11', desc:'Operação omnichannel madura. A maioria dos canais funciona de forma integrada. O foco agora é otimização e eliminação dos últimos pontos de fricção.'},
+  {min:88,max:101,label:'Nível 4 — Referência',          cor:'#27500a', desc:'Excelência operacional. Visão unificada do cliente, dados em tempo real e cultura de melhoria contínua consolidada. Benchmark do setor.'}
+];
+
+var cur=0;
+var ans={};
+var cad={};
+var emCapa=false;
+var capaAtualDi=0;
+
+function blocoDeQ(qi){
+  for(var d=0;d<DIMS.length;d++){
+    if(qi>=DIMS[d].inicio && qi<=DIMS[d].fim) return d;
+  }
+  return 0;
+}
+
+function setProg(pct, label){
+  document.getElementById('progFill').style.width=pct+'%';
+  document.getElementById('progPct').textContent=pct+'%';
+  document.getElementById('progLabel').textContent=label;
+}
+
+function iniciar(){
+  var nome=document.getElementById('f-nome').value.trim();
+  var email=document.getElementById('f-email').value.trim();
+  var empresa=document.getElementById('f-empresa').value.trim();
+  var cargo=document.getElementById('f-cargo').value.trim();
+  if(!nome||!email||!empresa||!cargo){alert('Preencha todos os campos para continuar.');return;}
+  cad={nome:nome,email:email,whatsapp:document.getElementById('f-whatsapp').value.trim(),empresa:empresa,cargo:cargo};
+  document.getElementById('stepCad').style.display='none';
+  document.getElementById('stepQ').style.display='block';
+  construirWrap();
+  exibirCapa(0);
+}
+
+function construirWrap(){
+  var html='';
+  /* capas */
+  for(var di=0;di<DIMS.length;di++){
+    var d=DIMS[di];
+    html+='<div class="capa" id="capa'+di+'">';
+    html+='<div class="capa-inner">';
+    html+='<div class="capa-num">Bloco '+(di+1)+' de '+DIMS.length+'</div>';
+    html+='<div class="capa-icone" style="background:'+d.bg+'"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">'+iconeSvg(di, d.iconCor)+'</svg></div>';
+    html+='<div class="capa-titulo">'+d.label+'</div>';
+    html+='<div class="capa-desc">'+d.desc+'</div>';
+    html+='<button class="capa-btn" onclick="iniciarBloco('+di+')">Começar este bloco →</button>';
+    html+='<div class="capa-pills">';
+    for(var k=0;k<d.itens.length;k++){
+      html+='<span class="capa-pill"><span class="capa-pill-dot"></span>'+d.itens[k]+'</span>';
+    }
+    html+='</div>';
+    html+='</div>';
+    if(di>0) html+='<div class="capa-voltar"><button onclick="voltarCapa('+di+')">← Voltar</button></div>';
+    html+='</div>';
+  }
+  /* perguntas */
+  for(var i=0;i<QS.length;i++){
+    var q=QS[i];
+    html+='<div class="q-wrap" id="q'+i+'">';
+    html+='<div class="card">';
+    html+='<div class="q-dim">'+q.dim+'</div>';
+    html+='<div class="q-texto">'+q.texto+'</div>';
+    html+='<div class="opcoes">';
+    var letras=['A','B','C','D'];
+    for(var oi=0;oi<q.opcoes.length;oi++){
+      html+='<div class="opcao" id="op'+i+'-'+oi+'" onclick="selecionar('+i+','+oi+')">';
+      html+='<div class="opcao-letra">'+letras[oi]+'</div>';
+      html+='<span>'+q.opcoes[oi]+'</span>';
+      html+='</div>';
+    }
+    html+='</div></div></div>';
+  }
+  document.getElementById('qWrap').innerHTML=html;
+}
+
+function iconeSvg(di, cor){
+  var icons=[
+    '<path d="M6 4h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" stroke="'+cor+'" stroke-width="1.5" fill="none"/><path d="M8 10h6M8 13h4M8 7h2" stroke="'+cor+'" stroke-width="1.5" stroke-linecap="round"/>',
+    '<path d="M4 12c0-4.4 3.6-8 8-8s8 3.6 8 8-3.6 8-8 8-8-3.6-8-8z" stroke="'+cor+'" stroke-width="1.5" fill="none"/><path d="M8 12l3 3 5-5" stroke="'+cor+'" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>',
+    '<rect x="4" y="8" width="14" height="12" rx="2" stroke="'+cor+'" stroke-width="1.5" fill="none"/><path d="M8 8V6a4 4 0 0 1 8 0v2" stroke="'+cor+'" stroke-width="1.5" fill="none"/>',
+    '<path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke="'+cor+'" stroke-width="1.5" fill="none" stroke-linecap="round"/><circle cx="10" cy="7" r="4" stroke="'+cor+'" stroke-width="1.5" fill="none"/>',
+    '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="'+cor+'" stroke-width="1.5" fill="none" stroke-linejoin="round"/>',
+    '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke="'+cor+'" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'
+  ];
+  return icons[di]||icons[0];
+}
+
+function ocultarTudo(){
+  var capas=document.querySelectorAll('.capa');
+  for(var i=0;i<capas.length;i++) capas[i].classList.remove('ativa');
+  var qs=document.querySelectorAll('.q-wrap');
+  for(var i=0;i<qs.length;i++) qs[i].classList.remove('ativa');
+}
+
+function exibirCapa(di){
+  ocultarTudo();
+  emCapa=true;
+  capaAtualDi=di;
+  document.getElementById('capa'+di).classList.add('ativa');
+  document.getElementById('btnV').style.visibility=(di===0)?'hidden':'visible';
+  document.getElementById('btnV').disabled=false;
+  document.getElementById('btnA').style.visibility='hidden';
+  document.getElementById('qHint').textContent='';
+  var pct=Math.round(DIMS[di].inicio/(QS.length)*100);
+  setProg(pct,'Bloco '+(di+1)+' de '+DIMS.length+' — '+DIMS[di].label);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function iniciarBloco(di){
+  emCapa=false;
+  irPara(DIMS[di].inicio);
+}
+
+function voltarCapa(di){
+  if(di===0){
+    document.getElementById('stepQ').style.display='none';
+    document.getElementById('stepCad').style.display='block';
+  } else {
+    exibirCapa(di-1);
+  }
+}
+
+function irPara(qi){
+  ocultarTudo();
+  emCapa=false;
+  document.getElementById('q'+qi).classList.add('ativa');
+  /* restaurar opção selecionada */
+  if(ans[qi]!==undefined){
+    document.getElementById('op'+qi+'-'+ans[qi]).classList.add('sel');
+  }
+  cur=qi;
+  document.getElementById('btnV').style.visibility='visible';
+  document.getElementById('btnV').disabled=false;
+  document.getElementById('btnA').style.visibility='visible';
+  document.getElementById('btnA').disabled=(ans[qi]===undefined);
+  var isLast=(qi===QS.length-1);
+  document.getElementById('btnA').textContent=isLast?'Ver resultado →':'Próxima →';
+  document.getElementById('qHint').textContent=(qi+1)+' de '+QS.length;
+  var pct=Math.round((qi+1)/(QS.length+1)*100);
+  setProg(pct, QS[qi].dim+' · '+(qi+1)+' de '+QS.length);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function selecionar(qi,oi){
+  ans[qi]=oi;
+  var opcoes=document.querySelectorAll('#q'+qi+' .opcao');
+  for(var i=0;i<opcoes.length;i++) opcoes[i].classList.remove('sel');
+  document.getElementById('op'+qi+'-'+oi).classList.add('sel');
+  document.getElementById('btnA').disabled=false;
+  var isLast=(qi===QS.length-1);
+  if(isLast){
+    setTimeout(function(){mostrarResultado();},350);
+    return;
+  }
+  var next=qi+1;
+  var proximoDi=blocoDeQ(next);
+  var atualDi=blocoDeQ(qi);
+  if(proximoDi!==atualDi){
+    /* mudança de bloco — mostra capa */
+    setTimeout(function(){exibirCapa(proximoDi);},350);
+  } else {
+    setTimeout(function(){irPara(next);},350);
+  }
+}
+
+function navAvancar(){
+  if(emCapa){
+    iniciarBloco(capaAtualDi);
+    return;
+  }
+  var isLast=(cur===QS.length-1);
+  if(isLast){mostrarResultado();return;}
+  var next=cur+1;
+  var proximoDi=blocoDeQ(next);
+  var atualDi=blocoDeQ(cur);
+  if(proximoDi!==atualDi){
+    exibirCapa(proximoDi);
+  } else {
+    irPara(next);
+  }
+}
+
+function navVoltar(){
+  if(emCapa){
+    voltarCapa(capaAtualDi);
+    return;
+  }
+  var atualDi=blocoDeQ(cur);
+  if(cur===DIMS[atualDi].inicio){
+    exibirCapa(atualDi);
+  } else {
+    irPara(cur-1);
+  }
+}
+
+function calcScores(){
+  var dimPcts={};
+  var totalPtsW=0, totalMaxW=0;
+  for(var d=0;d<DIMS.length;d++){
+    var dim=DIMS[d];
+    var respondidas=[];
+    for(var qi=dim.inicio;qi<=dim.fim;qi++){
+      if(ans[qi]!==undefined) respondidas.push(qi);
+    }
+    if(respondidas.length===0){dimPcts[dim.id]=null;continue;}
+    var pts=0;
+    for(var k=0;k<respondidas.length;k++) pts+=ans[respondidas[k]];
+    var maxD=respondidas.length*3;
+    dimPcts[dim.id]=Math.round(pts/maxD*100);
+    totalPtsW+=pts*(dim.peso/100);
+    totalMaxW+=maxD*(dim.peso/100);
+  }
+  var total=totalMaxW>0?Math.round(totalPtsW/totalMaxW*100):0;
+  return{dims:dimPcts,total:total};
+}
+
+function dimCor(v){
+  if(v===null) return '#ccc';
+  if(v>=65) return '#3b6d11';
+  if(v>=40) return '#ba7517';
+  return '#e24b4a';
+}
+
+function gerarInsights(scores){
+  var comDados=[];
+  for(var d=0;d<DIMS.length;d++){
+    if(scores.dims[DIMS[d].id]!==null) comDados.push(DIMS[d]);
+  }
+  comDados.sort(function(a,b){return scores.dims[a.id]-scores.dims[b.id];});
+  var items=[];
+  if(comDados.length>0){
+    var pior=comDados[0];
+    items.push({ic:'↓',cor:'#e24b4a',txt:'<strong>'+pior.label+'</strong> é o maior gap da sua operação ('+scores.dims[pior.id]+'%). É onde a falta de maturidade mais impacta a experiência do cliente e a eficiência do negócio.'});
+  }
+  if(comDados.length>1 && scores.dims[comDados[1].id]<55){
+    items.push({ic:'→',cor:'#ba7517',txt:'<strong>'+comDados[1].label+'</strong> também merece atenção ('+scores.dims[comDados[1].id]+'%). Costuma ser a segunda prioridade depois de tratar o gap principal.'});
+  }
+  if(scores.dims['cultura']!==null && scores.dims['cultura']<50){
+    items.push({ic:'↓',cor:'#e24b4a',txt:'<strong>Cultura e times</strong> abaixo de 50% é um alerta importante. Tecnologia sem alinhamento de incentivos e governança raramente sustenta evolução omnichannel.'});
+  }
+  if(scores.total<50){
+    items.push({ic:'→',cor:'#ba7517',txt:'Em operações no estágio inicial, o maior risco é tentar evoluir vários pontos ao mesmo tempo. Concentrar esforço em uma ou duas dimensões gera resultado mais rápido e sustentável.'});
+  }
+  if(comDados.length>0){
+    var melhor=comDados[comDados.length-1];
+    if(scores.dims[melhor.id]>=65){
+      items.push({ic:'↑',cor:'#3b6d11',txt:'<strong>'+melhor.label+'</strong> é o ponto mais maduro da operação ('+scores.dims[melhor.id]+'%). Importante preservar esse nível enquanto as demais dimensões evoluem.'});
+    }
+  }
+  if(scores.total>=70){
+    items.push({ic:'↑',cor:'#3b6d11',txt:'Com score acima de 70%, a empresa já tem uma base omnichannel relevante. O foco agora é otimização, escala e eliminação dos últimos pontos de fricção.'});
+  }
+  return items;
+}
+
+function buildGauge(score, cor, nivelLabel){
+  /* Gauge robusto para mobile: viewBox 280x200, score e label ABAIXO do arco */
+  var W=280, H=160;
+  var cx=140, cy=140;
+  var R=100, stroke=16;
+  var PI=Math.PI;
+
+  var zones=[
+    {from:0,   to:0.25, c:'#f09595'},
+    {from:0.25,to:0.50, c:'#FAC775'},
+    {from:0.50,to:0.70, c:'#EF9F27'},
+    {from:0.70,to:0.88, c:'#97C459'},
+    {from:0.88,to:1.00, c:'#5DCAA5'}
+  ];
+
+  function arcPath(from, to){
+    var sa = PI + from*PI;
+    var ea = PI + to*PI;
+    var x1=(cx+R*Math.cos(sa)).toFixed(2);
+    var y1=(cy+R*Math.sin(sa)).toFixed(2);
+    var x2=(cx+R*Math.cos(ea)).toFixed(2);
+    var y2=(cy+R*Math.sin(ea)).toFixed(2);
+    var lg=(to-from)>0.5?1:0;
+    return 'M'+x1+','+y1+' A'+R+','+R+' 0 '+lg+',1 '+x2+','+y2;
+  }
+
+  /* agulha */
+  var frac = Math.max(0, Math.min(1, score/100));
+  var na = PI + frac*PI;
+  /* ponta da agulha */
+  var npx=(cx + 82*Math.cos(na)).toFixed(2);
+  var npy=(cy + 82*Math.sin(na)).toFixed(2);
+  /* base leve da agulha (perpendicular, 5px de lado) */
+  var ba = na + PI/2;
+  var b1x=(cx + 7*Math.cos(ba)).toFixed(2);
+  var b1y=(cy + 7*Math.sin(ba)).toFixed(2);
+  var b2x=(cx - 7*Math.cos(ba)).toFixed(2);
+  var b2y=(cy - 7*Math.sin(ba)).toFixed(2);
+
+  var s='';
+  s+='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;overflow:visible">';
+
+  /* trilha fundo */
+  s+='<path d="'+arcPath(0,1)+'" fill="none" stroke="#f0f0ee" stroke-width="'+stroke+'" stroke-linecap="round"/>';
+
+  /* zonas coloridas */
+  for(var z=0;z<zones.length;z++){
+    s+='<path d="'+arcPath(zones[z].from, zones[z].to)+'" fill="none" stroke="'+zones[z].c+'" stroke-width="'+stroke+'" stroke-linecap="butt" opacity="0.9"/>';
+  }
+
+  /* marcadores de nível (texto dentro do arco) */
+  var labels=[
+    {p:0.125, t:'Fragmentado'},
+    {p:0.375, t:'Iniciante'},
+    {p:0.600, t:'Em desenv.'},
+    {p:0.790, t:'Avançado'},
+    {p:0.940, t:'Referência'}
+  ];
+  for(var l=0;l<labels.length;l++){
+    var la = PI + labels[l].p*PI;
+    var lx=(cx+(R-26)*Math.cos(la)).toFixed(1);
+    var ly=(cy+(R-26)*Math.sin(la)).toFixed(1);
+    s+='<text x="'+lx+'" y="'+ly+'" text-anchor="middle" dominant-baseline="central" font-size="7" fill="#aaa" font-family="-apple-system,sans-serif">'+labels[l].t+'</text>';
+  }
+
+  /* agulha em triângulo fino */
+  s+='<polygon points="'+npx+','+npy+' '+b1x+','+b1y+' '+b2x+','+b2y+'" fill="#2c2c2a" opacity="0.9"/>';
+
+  /* pivô */
+  s+='<circle cx="'+cx+'" cy="'+cy+'" r="9" fill="#2c2c2a"/>';
+  s+='<circle cx="'+cx+'" cy="'+cy+'" r="4" fill="#fff"/>';
+
+  /* score centralizado ABAIXO do pivô, fora do arco */
+  s+='<text x="'+cx+'" y="'+(cy+28)+'" text-anchor="middle" font-size="32" font-weight="700" fill="'+cor+'" font-family="-apple-system,sans-serif">'+score+'%</text>';
+
+  s+='</svg>';
+  return s;
+}
+
+function mostrarResultado(){
+  document.getElementById('stepQ').style.display='none';
+  document.getElementById('stepRes').style.display='block';
+  document.getElementById('enviando').style.display='block';
+  setProg(100,'Diagnóstico inicial');
+  window.scrollTo({top:0,behavior:'smooth'});
+
+  var scores=calcScores();
+  var nivel=NIVEIS[0];
+  for(var n=0;n<NIVEIS.length;n++){
+    if(scores.total>=NIVEIS[n].min && scores.total<NIVEIS[n].max){nivel=NIVEIS[n];break;}
+  }
+  var insights=gerarInsights(scores);
+
+  var payload={
+    nome:cad.nome, email:cad.email, whatsapp:cad.whatsapp,
+    empresa:cad.empresa, cargo:cad.cargo,
+    scoreDados:scores.dims.dados!==null?scores.dims.dados:'',
+    scoreJornada:scores.dims.jornada!==null?scores.dims.jornada:'',
+    scoreLogistica:scores.dims.logistica!==null?scores.dims.logistica:'',
+    scoreCultura:scores.dims.cultura!==null?scores.dims.cultura:'',
+    scoreCx:scores.dims.cx!==null?scores.dims.cx:'',
+    scorePerformance:scores.dims.performance!==null?scores.dims.performance:'',
+    scoreTotal:scores.total,
+    nivel:nivel.label
+  };
+
+  var iframe=document.createElement('iframe');
+  iframe.name='hid'; iframe.style.display='none';
+  document.body.appendChild(iframe);
+  var form=document.createElement('form');
+  form.method='POST'; form.action=WEBHOOK; form.target='hid'; form.style.display='none';
+  var keys=Object.keys(payload);
+  for(var k=0;k<keys.length;k++){
+    var inp=document.createElement('input');
+    inp.type='hidden'; inp.name=keys[k]; inp.value=payload[keys[k]];
+    form.appendChild(inp);
+  }
+  document.body.appendChild(form);
+  form.submit();
+
+  setTimeout(function(){
+    document.getElementById('enviando').style.display='none';
+    var velocSvg=buildGauge(scores.total, nivel.cor, nivel.label);
+    var dimsHtml='';
+    for(var d=0;d<DIMS.length;d++){
+      var v=scores.dims[DIMS[d].id];
+      var cor2=dimCor(v);
+      dimsHtml+='<div class="dim-card">';
+      dimsHtml+='<div class="dim-card-nome">'+DIMS[d].label+'</div>';
+      dimsHtml+='<div class="dim-bar-wrap"><div class="dim-bar"><div class="dim-bar-fill" style="width:'+(v!==null?v:0)+'%;background:'+cor2+'"></div></div></div>';
+      dimsHtml+='<div class="dim-card-val" style="color:'+cor2+'">'+(v!==null?v+'%':'—')+'</div>';
+      dimsHtml+='</div>';
+    }
+    var insightsHtml='';
+    for(var i=0;i<insights.length;i++){
+      insightsHtml+='<div class="ins-item"><div class="ins-ic" style="color:'+insights[i].cor+'">'+insights[i].ic+'</div><div>'+insights[i].txt+'</div></div>';
+    }
+    document.getElementById('resConteudo').innerHTML=
+      '<div class="res-gauge-card">'+
+        '<p class="res-rotulo">Diagnóstico inicial de maturidade omnichannel</p>'+
+        '<div class="res-gauge-wrap">'+velocSvg+'</div>'+
+        '<div class="res-nivel" style="color:'+nivel.cor+'">'+nivel.label+'</div>'+
+        '<div class="res-nivel-desc">'+nivel.desc+'</div>'+
+      '</div>'+
+      '<div class="res-dims">'+dimsHtml+'</div>'+
+      '<div class="insights"><h3>O que esse diagnóstico inicial revela</h3>'+insightsHtml+'</div>'+
+      '<div class="obrigado">'+
+        '<h3>Diagnóstico inicial concluído</h3>'+
+        '<p>Este é um diagnóstico de primeiro nível — desenvolvido para dar uma visão clara e rápida sobre a maturidade omnichannel da sua operação.<br><br>'+
+        'Use os resultados como ponto de partida para conversas internas, definição de prioridades e identificação das dimensões que mais precisam de atenção.</p>'+
+      '</div>';
+  }, 2000);
+}
+</script>
+</body>
+</html>.capa-voltar button{background:none;border:none;font-size:13px;color:#bbb;cursor:pointer;padding:4px 8px}
 .capa-voltar button:hover{color:#888}
 .capa-pills{display:flex;gap:16px;justify-content:center;margin-top:1.5rem;flex-wrap:wrap}
 .capa-pill{font-size:12px;color:#bbb;display:flex;align-items:center;gap:5px}
